@@ -1,0 +1,53 @@
+name: UpaySutra
+website: upaysutra.com
+# TODO(Ashutosh): exact current offer wording for the soft app mention.
+app_mention: "Apni kundli ke hisaab se personal upay ke liye UpaySutra app try karein (link in bio) ✨"
+app_mention_every_n_posts: 3
+# Panchang days carry 3 rotating rashis; this line replaces the 1-in-3 app mention there.
+rashifal_cta: "Baaki rashiyon ka rashifal dekhne ke liye UpaySutra app par jaayein, aur astrologers se seedhe baat bhi karein (link in bio) ✨"
+ctas:
+  - "Comment karein apni rashi 👇"
+  - "Save karein, kaam aayega 🔖"
+  - "Share karein apno ke saath 🙏"
+# From the UpaySutra logo (2026-10-25). Used in templates/base.css.
+colors:
+  orange: "#E97A35"         # mark circle
+  orange_text: "#E47D32"    # "sutra"
+  tagline: "#EBA36D"        # "Jeevan Ke Saral Upay"
+  dark: "#261D16"           # "Upay" on light backgrounds
+  cream: "#FDFBF7"          # logo background; "Upay" on our dark posts
+tagline: "Jeevan Ke Saral Upay"
+logo: assets/logo.png
+
+# Last slide of Panchang-day carousels: one simple message. Plain promises only
+# (no "100%", no guaranteed results).
+cta_slide:
+  title: "बाकी राशियों का राशिफल जानने के लिए UpaySutra ऐप पर जाएँ"
+  subtitle: "और ज्योतिषियों से बात करके और भी जानें"
+  # Nothing on an image is clickable, so show a short link people can type.
+  # upaysutra.com/get-app is the app hand-off page (links to the Play Store).
+  button: "upaysutra.com/get-app"
+  footnote: "लिंक बायो में 🔗"
+
+# Instagram captions say "(link in bio)" (caption links aren't clickable there);
+# Facebook captions get the real link instead. The referrer tags installs by
+# source in Play Console.
+play_store_url: "https://play.google.com/store/apps/details?id=com.astro.upaysutra"
+facebook_link: "https://play.google.com/store/apps/details?id=com.astro.upaysutra&referrer=utm_source%3Dfacebook%26utm_medium%3Dsocial"
+
+# Evening (8 PM) "Kal ka din" feed posts rotate these instead of `ctas`.
+evening_ctas:
+  - "Save karein, kal kaam aayega 🔖"
+  - "Share karein apno ke saath, taaki sab kal ki taiyari kar sakein 🙏"
+  - "Comment mein likhein: kal aap kya karenge? 👇"
+
+# Stories: Instagram link stickers are clickable, so they get the direct Play
+# Store link tagged as story traffic.
+story_link: "https://play.google.com/store/apps/details?id=com.astro.upaysutra&referrer=utm_source%3Dinstagram%26utm_medium%3Dstory"
+# Business Suite's Facebook-story "Swipe up link" rejects Play Store links
+# (2026-10-27), so Facebook stories use the website's app page instead.
+facebook_story_link: "https://www.upaysutra.com/get-app?utm_source=facebook&utm_medium=story"
+story_sticker_text: "App डाउनलोड करें"
+# Line under the CTA on story images. Automated stories (Meta API) can't carry
+# link stickers, so point to the bio link.
+story_cta_sub: "👆 लिंक बायो में · UpaySutra ऐप"

@@ -1,0 +1,26 @@
+master_style: >
+  Indian devotional art, rich painterly digital illustration with soft
+  cinematic lighting. Warm palette of saffron, marigold and antique gold
+  set against deep indigo and midnight blue. Divine golden glow, gentle
+  light rays, subtle floating dust particles, a sense of calm and
+  sacredness. Traditional, reverent, premium, never kitsch.
+
+composition: >
+  Vertical 4:5 frame. Main subject in the upper-middle of the frame.
+  The lower 40% of the image is calm, darker, uncluttered space (soft
+  smoke, gradient, or blurred background) suitable for overlaying text.
+
+negative: >
+  No text, no letters, no numbers, no watermark, no logo, no signature.
+  No human faces or people. No distorted or extra hands or limbs.
+  No photorealism, no modern objects.
+
+# One of these is added per image, rotating by how many images the tag already
+# has, so a tag's library doesn't become near-identical copies.
+variations:
+  - "Soft dawn light from the left, pale mist drifting over the scene."
+  - "Deep night, moonlit, cool silver highlights with a warm golden glow on the subject."
+  - "Golden-hour warmth, light rays from the upper right, a few floating marigold petals."
+  - "Close, intimate framing; background of softly blurred temple lamps (bokeh)."
+  - "Wide, serene framing; subject smaller and centred under a vast starry sky."
+  - "Gentle rain-washed atmosphere, glistening surfaces, calm reflective light."

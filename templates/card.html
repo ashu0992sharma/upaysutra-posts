@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="hi"><head><meta charset="utf-8">
+<style>
+{% include "base.css" %}
+:root { --w: {{ w }}px; --h: {{ h }}px; }
+.shade { background: linear-gradient(180deg, rgba(var(--night),.10) 0%, rgba(var(--night),.20) {{ '30%' if story else '36%' }},
+                                      rgba(var(--night),.86) {{ '46%' if story else '54%' }}, rgba(var(--night),.96) 100%); }
+{% if story %}.topbar { top: 150px; }{% endif %}
+/* Content stacks from the bottom (feed) or sits in the story's safe zone. */
+.stack { position: absolute; left: 60px; right: 60px; bottom: {{ 330 if story else 96 }}px;
+         display: flex; flex-direction: column; align-items: center; text-align: center; gap: {{ 26 if story else 18 }}px; }
+.kicker { font-size: {{ 36 if story else 32 }}px; font-weight: 700; color: var(--saffron); letter-spacing: 1px;
+          text-shadow: 0 2px 10px rgba(0,0,0,.85), 0 0 2px rgba(0,0,0,.9); }
+h1 { margin-top: -8px; font-family: "Baloo 2"; font-weight: 800; font-size: {{ 100 if story else 92 }}px; line-height: 1.08;
+     background: linear-gradient(180deg, #FFF1C9 0%, var(--gold) 55%, var(--saffron) 100%);
+     -webkit-background-clip: text; background-clip: text; color: transparent;
+     filter: drop-shadow(0 4px 16px rgba(0,0,0,.6)); }
+.sub { margin-top: -10px; font-size: 34px; font-weight: 600; }
+.times { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
+.t { min-width: 280px; padding: 14px 26px; border-radius: 22px; background: rgba(255,255,255,.06);
+     border: 1.5px solid rgba(242,193,78,.35); }
+.t .l { font-size: 26px; color: var(--gold-soft); font-weight: 600; }
+.t .v { font-size: 36px; font-weight: 700; }
+.t.avoid .v { color: var(--avoid); }
+.box { width: 100%; padding: 20px 34px; border-radius: 24px; background: rgba(242,140,40,.12);
+       border: 1.5px solid rgba(242,140,40,.55); text-align: left; }
+.box .k { font-size: 28px; font-weight: 700; color: var(--saffron); text-align: center; }
+.box ul { list-style: none; margin-top: 6px; }
+.box li { font-size: {{ 40 if story else 36 }}px; font-weight: 600; line-height: 1.35; padding: 5px 0 5px 46px; position: relative; }
+.box li::before { content: "✓"; position: absolute; left: 4px; color: var(--good); font-weight: 700; }
+.box .x { font-size: 38px; font-weight: 600; line-height: 1.3; text-align: center; margin-top: 4px; }
+.cta { width: 100%; padding: 24px 30px; border-radius: 26px; background: rgba(242,193,78,.12);
+       border: 1.5px solid rgba(242,193,78,.55); }
+.cta b { display: block; font-size: 40px; color: var(--gold); font-weight: 700; line-height: 1.25; }
+.cta span { display: block; margin-top: 6px; font-size: 30px; color: var(--ink-dim); }
+</style></head>
+<body>
+  <div class="bg"></div><div class="shade"></div><div class="scrim"></div>
+  <div class="topbar">
+    {% include "_logo.html" %}
+    <div class="chip">{{ date_chip }}</div>
+  </div>
+  <div class="stack">
+    {% if kicker %}<div class="kicker">✦ {{ kicker }} ✦</div>{% endif %}
+    <h1>{{ title }}</h1>
+    {% if subline %}<div class="sub">{{ subline }}</div>{% endif %}
+    {% if times %}<div class="times">{% for t in times %}<div class="t {{ t.tone or '' }}"><div class="l">{{ t.label }}</div><div class="v">{{ t.value }}</div></div>{% endfor %}</div>{% endif %}
+    {% if points %}<div class="box"><div class="k">{{ points_title }}</div><ul>{% for p in points %}<li>{{ p }}</li>{% endfor %}</ul></div>{% endif %}
+    {% if upay %}<div class="box"><div class="k">🪔 आज का उपाय</div><div class="x">{{ upay }}</div></div>{% endif %}
+    {% if cta %}<div class="cta"><b>{{ cta }}</b>{% if cta_sub %}<span>{{ cta_sub }}</span>{% endif %}</div>{% endif %}
+  </div>
+  {% if not story %}<div class="footer"><div>📍 {{ location }} के समयानुसार</div><div class="swipe">{{ footer_right }}</div></div>{% endif %}
+</body></html>

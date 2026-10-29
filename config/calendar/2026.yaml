@@ -1,0 +1,94 @@
+# Festival & vrat dates for New Delhi — the ONLY source of occasion dates.
+#
+# Source: drikpanchang.com, New Delhi, monthly festival pages + vrat lists
+# (/festivals/month/festivals-<month>.html?year=2026), fetched 2026-10-24.
+#
+# Curation rules (keep consistent when adding a year):
+#   - Names copied as Drik spells them.
+#   - North-Indian observances only. Regional duplicates are left out because
+#     they'd match the wrong rule: "Hanuman Jayanti *Kannada", "Naga Panchami
+#     *Telugu", "Bengal Vijayadashami", "Mysore Dasara", "Tamil Deepavali".
+#   - Purnima: keep the vrat day ("... Purnima Vrat"); drop the next-day
+#     snan-daan duplicate. Amavasya: keep the snan-daan day ("<Month> Amavasya");
+#     drop "Darsha Amavasya".
+#   - Shraddha days, Ishti/Anvadhan, Rohini Vrat, Masik Karthigai etc. are
+#     omitted: we never post on them.
+#
+# `python -m postgen check-calendar` verifies each vrat/festival date against
+# the tithi kalagana computes for that day (catches typos and shifted dates).
+
+covers: {from: 2026-10-01, to: 2026-12-31}
+
+days:
+  # ---------------- October ----------------
+  2026-10-03: [Kalashtami, Jivitputrika Vrat]
+  2026-10-06: [Indira Ekadashi]
+  2026-10-08: [Guru Pradosh Vrat, Masik Shivaratri]
+  2026-10-10: [Sarva Pitru Amavasya, Ashwina Amavasya]
+  2026-10-11: [Navratri Begins, Ghatasthapana, Maharaja Agrasen Jayanti]
+  2026-10-17: [Tula Sankranti, Saraswati Puja]
+  2026-10-19: [Durga Ashtami, Maha Navami]
+  2026-10-20: [Dussehra, Vijayadashami]
+  2026-10-22: [Papankusha Ekadashi]
+  2026-10-23: [Shukra Pradosh Vrat]
+  2026-10-25: [Sharad Purnima, Kojagara Puja, Ashwina Purnima Vrat]
+  2026-10-26: [Valmiki Jayanti]
+  2026-10-29: [Karwa Chauth, Vakratunda Sankashti]
+
+  # ---------------- November ----------------
+  2026-11-01: [Ahoi Ashtami, Kalashtami]
+  2026-11-05: [Rama Ekadashi, Govatsa Dwadashi]
+  2026-11-06: [Dhanteras, Shukra Pradosh Vrat]
+  2026-11-07: [Kali Chaudas, Hanuman Puja, Masik Shivaratri]
+  2026-11-08: [Diwali, Lakshmi Puja, Narak Chaturdashi]
+  2026-11-09: [Kartika Amavasya]
+  2026-11-10: [Govardhan Puja, Annakut]
+  2026-11-11: [Bhaiya Dooj, Chitragupta Puja]
+  2026-11-15: [Chhath Puja]
+  2026-11-16: [Vrishchika Sankranti]
+  2026-11-17: [Gopashtami, Masik Durgashtami]
+  2026-11-18: [Akshaya Navami]
+  2026-11-20: [Devutthana Ekadashi]
+  2026-11-21: [Tulasi Vivah]
+  2026-11-22: [Ravi Pradosh Vrat]
+  2026-11-23: [Vaikuntha Chaturdashi]
+  2026-11-24: [Kartika Purnima, Dev Diwali, Guru Nanak Jayanti]
+  2026-11-27: [Ganadhipa Sankashti]
+
+  # ---------------- December ----------------
+  2026-12-01: [Kalabhairav Jayanti, Kalashtami]
+  2026-12-04: [Utpanna Ekadashi]
+  2026-12-06: [Ravi Pradosh Vrat]
+  2026-12-07: [Masik Shivaratri]
+  2026-12-08: [Margashirsha Amavasya]
+  2026-12-14: [Vivah Panchami]
+  2026-12-16: [Dhanu Sankranti]
+  2026-12-17: [Masik Durgashtami]
+  2026-12-20: [Mokshada Ekadashi, Gita Jayanti]
+  2026-12-21: [Soma Pradosh Vrat]
+  2026-12-23: [Margashirsha Purnima Vrat, Dattatreya Jayanti]
+  2026-12-26: [Akhuratha Sankashti]
+  2026-12-30: [Kalashtami]
+
+# Festival-specific timings shown on the post, copied from the festival's
+# Drik Panchang page (New Delhi). Curated, not computed: kalagana's moonrise and
+# tithi ends differ from Drik by 3–6 min, which matters for e.g. breaking the
+# Karwa Chauth fast. Labels are shown as-is (Hinglish). Only listed timings are
+# shown; the caption LLM is told exactly which ones exist.
+timings:
+  2026-10-25:  # Sharad Purnima — /purnima/sharad/sharad-purnima-date-time.html?year=2026
+    - [Chandrodaya, "5:00 PM"]
+    - [Purnima tithi aarambh, "11:55 AM"]
+  2026-10-29:  # Karwa Chauth — /festivals/karwa-chauth/karwa-chauth-date-time.html?year=2026
+    - [Puja Muhurat, "5:38 PM – 6:56 PM"]
+    - [Chandrodaya, "8:17 PM"]
+  2026-11-01:  # Ahoi Ashtami — /festivals/ahoi-ashtami/ahoi-ashtami-date-time.html?year=2026
+    - [Puja Muhurat, "5:36 PM – 6:54 PM"]
+    - [Taron ko dekhne ka samay, "6:00 PM"]
+    - [Chandrodaya, "11:40 PM"]
+  2026-11-10:  # Govardhan Puja — /festivals/govardhan-puja/govardhan-puja-date-time.html?year=2026
+    - [Pratahkala Muhurat, "6:40 AM – 8:50 AM"]
+  2026-11-15:  # Chhath Puja — /festivals/chhath-puja/chhath-puja-date-time.html?year=2026
+    - [Sandhya Arghya (suryast), "5:28 PM"]
+  # TODO before the 2 Nov run: Dhanteras, Diwali (Lakshmi Puja), Bhai Dooj muhurats,
+  # Rama Ekadashi parana (6 Nov).

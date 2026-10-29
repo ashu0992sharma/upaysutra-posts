@@ -1,0 +1,82 @@
+# Occasion → priority / background tag mapping.
+#
+# How a day's occasion is picked (postgen/occasions.py):
+#   1. Every festival/vrat name in config/calendar/<year>.yaml for the day is matched
+#      against `match` (case-insensitive, whole words). `exclude` vetoes a match
+#      (e.g. "Ekadashi Parana" is the fast-breaking day, not Ekadashi).
+#   2. Lowest `priority` wins; ties go to whichever entry is listed first.
+#   3. No match → `fallback` (Aaj ka Panchang).
+#   Occasions are never derived from the computed tithi: observance-day rules
+#   (viddha, pradosh-kaal, moonrise, adhika masa) are where computed calendars
+#   go wrong, so dates come only from the curated calendar.
+#
+# tithi: the tithi that must occur on the listed day (sunrise→next sunrise).
+#   Used only by `check-calendar` to catch typos/shifted dates; never to pick dates.
+#
+# keep_name: true → headline uses the calendar's specific name
+#   ("Rama Ekadashi", "Navratri Day 3") instead of name_en.
+
+occasions:
+  # ---------- Priority 1: major festivals ----------
+  - {slug: diwali,            priority: 1, tag: lakshmi, name_en: Diwali,             name_hi: दीपावली,           match: [diwali, deepavali, lakshmi puja], exclude: [dev diwali, dev deepawali], tithi: Amavasya}
+  - {slug: dhanteras,         priority: 1, tag: lakshmi, name_en: Dhanteras,          name_hi: धनतेरस,            match: [dhanteras, dhantrayodashi, dhanatrayodashi], tithi: Krishna Trayodashi}
+  - {slug: narak-chaturdashi, priority: 1, tag: diya,    name_en: Narak Chaturdashi,  name_hi: नरक चतुर्दशी,       match: [narak chaturdashi, naraka chaturdashi, choti diwali, roop chaudas], tithi: Krishna Chaturdashi}
+  - {slug: kali-chaudas,      priority: 1, tag: diya,    name_en: Choti Diwali,       name_hi: छोटी दिवाली,         match: [kali chaudas], tithi: Krishna Chaturdashi}
+  - {slug: govardhan-puja,    priority: 1, tag: vishnu,  name_en: Govardhan Puja,     name_hi: गोवर्धन पूजा,       match: [govardhan puja, annakut], tithi: Shukla Pratipada}
+  - {slug: bhai-dooj,         priority: 1, tag: diya,    name_en: Bhai Dooj,          name_hi: भाई दूज,           match: [bhai dooj, bhaiya dooj, bhau beej, yama dwitiya], tithi: Shukla Dwitiya}
+  - {slug: chhath,            priority: 1, tag: surya,   name_en: Chhath Puja,        name_hi: छठ पूजा,           match: [chhath], tithi: Shukla Shashthi}
+  - {slug: karwa-chauth,      priority: 1, tag: diya,    name_en: Karwa Chauth,       name_hi: करवा चौथ,          match: [karwa chauth, karva chauth], tithi: Krishna Chaturthi}
+  - {slug: ahoi-ashtami,      priority: 1, tag: durga,   name_en: Ahoi Ashtami,       name_hi: अहोई अष्टमी,       match: [ahoi ashtami], tithi: Krishna Ashtami}
+  - {slug: sharad-purnima,    priority: 1, tag: moon_full, name_en: Sharad Purnima,   name_hi: शरद पूर्णिमा,       match: [sharad purnima, kojagara, kojagiri], tithi: Purnima}
+  - {slug: kartik-purnima,    priority: 1, tag: moon_full, name_en: Kartik Purnima,   name_hi: कार्तिक पूर्णिमा,    match: [kartik purnima, kartika purnima, dev deepawali, dev diwali], tithi: Purnima}
+  - {slug: dev-uthani-ekadashi, priority: 1, tag: vishnu, name_en: Dev Uthani Ekadashi, name_hi: देवउठनी एकादशी,  match: [dev uthani, devutthana, prabodhini, tulsi vivah], tithi: Shukla Ekadashi}
+  - {slug: nirjala-ekadashi,  priority: 1, tag: vishnu,  name_en: Nirjala Ekadashi,   name_hi: निर्जला एकादशी,     match: [nirjala ekadashi], exclude: [parana], tithi: Shukla Ekadashi}
+  - {slug: dussehra,          priority: 1, tag: hanuman, name_en: Dussehra,           name_hi: दशहरा,             match: [dussehra, dasara, vijayadashami], tithi: Shukla Dashami}
+  - {slug: durga-ashtami,     priority: 1, tag: durga,   name_en: Durga Ashtami,      name_hi: दुर्गा अष्टमी,      match: [durga ashtami, maha ashtami, durgashtami], exclude: [masik], tithi: Shukla Ashtami}
+  - {slug: maha-navami,       priority: 1, tag: durga,   name_en: Maha Navami,        name_hi: महानवमी,           match: [maha navami], tithi: Shukla Navami}
+  - {slug: navratri,          priority: 1, tag: durga,   name_en: Navratri,           name_hi: नवरात्रि,          match: [navratri, navaratri, ghatasthapana], keep_name: true}
+  - {slug: ram-navami,        priority: 1, tag: surya,   name_en: Ram Navami,         name_hi: राम नवमी,          match: [ram navami, rama navami], tithi: Shukla Navami}
+  - {slug: maha-shivratri,    priority: 1, tag: shiv,    name_en: Maha Shivratri,     name_hi: महाशिवरात्रि,       match: [maha shivratri, mahashivratri, maha shivaratri], tithi: Krishna Chaturdashi}
+  - {slug: janmashtami,       priority: 1, tag: vishnu,  name_en: Janmashtami,        name_hi: जन्माष्टमी,         match: [janmashtami, krishna janmashtami, gokulashtami], exclude: [masik], tithi: Krishna Ashtami}
+  - {slug: ganesh-chaturthi,  priority: 1, tag: ganesh,  name_en: Ganesh Chaturthi,   name_hi: गणेश चतुर्थी,       match: [ganesh chaturthi, ganesha chaturthi, vinayaka chaturthi bhadrapada], tithi: Shukla Chaturthi}
+  - {slug: hanuman-jayanti,   priority: 1, tag: hanuman, name_en: Hanuman Jayanti,    name_hi: हनुमान जयंती,       match: [hanuman jayanti], tithi: Purnima}
+  - {slug: holika-dahan,      priority: 1, tag: diya,    name_en: Holika Dahan,       name_hi: होलिका दहन,        match: [holika dahan], tithi: Purnima}
+  - {slug: holi,              priority: 1, tag: vishnu,  name_en: Holi,               name_hi: होली,              match: [holi, dhulandi, rangwali holi], exclude: [holika], tithi: Krishna Pratipada}
+  - {slug: raksha-bandhan,    priority: 1, tag: diya,    name_en: Raksha Bandhan,     name_hi: रक्षा बंधन,         match: [raksha bandhan, rakhi], tithi: Purnima}
+  - {slug: makar-sankranti,   priority: 1, tag: surya,   name_en: Makar Sankranti,    name_hi: मकर संक्रांति,      match: [makar sankranti, makara sankranti, lohri]}
+  - {slug: basant-panchami,   priority: 1, tag: cosmic,  name_en: Basant Panchami,    name_hi: बसंत पंचमी,         match: [basant panchami, vasant panchami], tithi: Shukla Panchami}
+  - {slug: akshaya-tritiya,   priority: 1, tag: lakshmi, name_en: Akshaya Tritiya,    name_hi: अक्षय तृतीया,       match: [akshaya tritiya, akha teej], tithi: Shukla Tritiya}
+  - {slug: guru-purnima,      priority: 1, tag: moon_full, name_en: Guru Purnima,     name_hi: गुरु पूर्णिमा,       match: [guru purnima, vyasa purnima], tithi: Purnima}
+  - {slug: hartalika-teej,    priority: 1, tag: shiv,    name_en: Hartalika Teej,     name_hi: हरतालिका तीज,       match: [hartalika teej], tithi: Shukla Tritiya}
+  - {slug: hariyali-teej,     priority: 1, tag: shiv,    name_en: Hariyali Teej,      name_hi: हरियाली तीज,        match: [hariyali teej, sawan teej], tithi: Shukla Tritiya}
+  - {slug: nag-panchami,      priority: 1, tag: shiv,    name_en: Nag Panchami,       name_hi: नाग पंचमी,          match: [nag panchami, naga panchami], tithi: Shukla Panchami}
+
+  # ---------- Priority 2: vrat / parv days ----------
+  - {slug: ekadashi,          priority: 2, tag: vishnu,  name_en: Ekadashi,           name_hi: एकादशी,            match: [ekadashi], exclude: [parana], keep_name: true, tithi: Ekadashi}
+  - {slug: purnima,           priority: 2, tag: moon_full, name_en: Purnima,          name_hi: पूर्णिमा,           match: [purnima, poornima, purnimasi], keep_name: true, tithi: Purnima}
+  - {slug: amavasya,          priority: 2, tag: moon_new, name_en: Amavasya,         name_hi: अमावस्या,           match: [amavasya, amavasai], keep_name: true, tithi: Amavasya}
+  - {slug: pradosh,           priority: 2, tag: shiv,    name_en: Pradosh Vrat,       name_hi: प्रदोष व्रत,         match: [pradosh, pradosham], keep_name: true, tithi: Trayodashi}
+  - {slug: masik-shivratri,   priority: 2, tag: shiv,    name_en: Masik Shivratri,    name_hi: मासिक शिवरात्रि,     match: [masik shivratri, masik shivaratri], tithi: Krishna Chaturdashi}
+  - {slug: sankranti,         priority: 2, tag: surya,   name_en: Sankranti,          name_hi: संक्रांति,          match: [sankranti], keep_name: true}
+  - {slug: sankashti-chaturthi, priority: 2, tag: ganesh, name_en: Sankashti Chaturthi, name_hi: संकष्टी चतुर्थी,  match: [sankashti, sakat chauth], keep_name: true, tithi: Krishna Chaturthi}
+  - {slug: vinayaka-chaturthi, priority: 2, tag: ganesh, name_en: Vinayaka Chaturthi, name_hi: विनायक चतुर्थी,     match: [vinayaka chaturthi, vinayak chaturthi], tithi: Shukla Chaturthi}
+  - {slug: ashtami,           priority: 2, tag: durga,   name_en: Masik Durgashtami,  name_hi: मासिक दुर्गाष्टमी,   match: [masik durgashtami, durgashtami vrat], tithi: Shukla Ashtami}
+  - {slug: kalashtami,        priority: 2, tag: shiv,    name_en: Kalashtami,         name_hi: कालाष्टमी,          match: [kalashtami, kala ashtami], tithi: Krishna Ashtami}
+
+fallback:
+  slug: aaj-ka-panchang
+  priority: 3
+  tag: cosmic
+  name_en: Aaj ka Panchang
+  name_hi: आज का पंचांग
+
+# Evening "Kal ka din" posts on ordinary days focus on the next day's weekday
+# deity (traditional North-Indian association) and use this background tag.
+weekdays:
+  Monday:    {deity: "Shiv ji",                 deity_hi: "शिव जी",              tag: shiv}
+  Tuesday:   {deity: "Hanuman ji",              deity_hi: "हनुमान जी",           tag: hanuman}
+  Wednesday: {deity: "Ganesh ji",               deity_hi: "गणेश जी",             tag: ganesh}
+  Thursday:  {deity: "Shri Vishnu aur Guru Brihaspati", deity_hi: "श्री हरि",    tag: vishnu}
+  Friday:    {deity: "Maa Lakshmi",             deity_hi: "माँ लक्ष्मी",          tag: lakshmi}
+  Saturday:  {deity: "Shani Dev aur Hanuman ji", deity_hi: "शनि देव",            tag: hanuman}
+  Sunday:    {deity: "Surya Dev",               deity_hi: "सूर्य देव",            tag: surya}

@@ -1,0 +1,65 @@
+# Checked by code on every LLM-written field (postgen/captions.py). Any hit →
+# the caption is regenerated with the problem fed back; after 3 failed tries the
+# day is flagged for manual writing instead of being posted.
+# Patterns are case-insensitive regexes, matched on word boundaries where it matters.
+
+banned:
+  guaranteed_outcomes:
+    - '100\s*%'
+    - '\bguarantee'
+    - '\bgaranti'
+    - '\bpakka\b'
+    - '\bnishchit\b'
+    - '\bzaroor\s+(milega|milegi|hoga|hogi)\b'
+    - '\bturant\s+(fal|phal|result|labh)'
+    - '\bchamatkar'
+    - '\bmiracle'
+    - 'गारंटी'
+    - 'पक्का'
+    - 'चमत्कार'
+  money_claims:
+    - '\bpais[ae]\s+(aaye|aayeg|aaeg)'
+    - '\bdhan\s+ki\s+(baarish|barish|varsha)'
+    - '\blottery\b'
+    - '\bloan\b'
+    - '\bkarz'
+    - '\bameer\s+ban'
+    - '\bjackpot'
+  medical_claims:
+    - '\brog\b'
+    - '\bbimari'
+    - '\bbeemari'
+    - '\bilaaj'
+    - '\bcure'
+    - '\bdawa\b'
+    - '\bmedicine'
+    - '\bcancer\b'
+    - '\bdiabetes'
+    - 'रोग'
+    - 'इलाज'
+    - 'बीमारी'
+  fear:
+    - '\bwarna\b'
+    - '\bnahi\s+to\b'
+    - '\banarth'
+    - '\bshr?aap'
+    - '\bbura\s+hoga'
+    - '\bnaash\b'
+    - '\bmaut\b'
+    - '\bmrityu'
+    - '\bdosh\s+lagega'
+    - '\bkangal'
+    - '\bsankat\s+aayega'
+
+# The LLM must never state timings or dates: code inserts them from computed data.
+timing_patterns:
+  - '\d{1,2}\s*[:.]\s*\d{2}'
+  - '\b(am|pm)\b'
+  - '\bbaje\b'
+  - '\b(muhurat|muhurt)\s+(hai|h|:)'
+  - '\b(january|february|march|april|may|june|july|august|september|october|november|december)\b'
+  - '\b(jan|feb|mar|apr|jun|jul|aug|sep|sept|oct|nov|dec)\b\.?\s*\d'
+  - '\d{1,2}\s*(tarikh|tareekh)'
+  - 'बजे'
+
+hook_max_chars: 125

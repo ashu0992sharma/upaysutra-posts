@@ -1,0 +1,48 @@
+/* Shared post styles. --w/--h let a 1080x1920 story variant reuse the templates. */
+@font-face { font-family: "Baloo 2"; src: url("{{ fonts }}/Baloo2.ttf"); font-weight: 400 800; }
+@font-face { font-family: "Mukta"; src: url("{{ fonts }}/Mukta-Regular.ttf"); font-weight: 400; }
+@font-face { font-family: "Mukta"; src: url("{{ fonts }}/Mukta-SemiBold.ttf"); font-weight: 600; }
+@font-face { font-family: "Mukta"; src: url("{{ fonts }}/Mukta-Bold.ttf"); font-weight: 700; }
+@font-face { font-family: "Symbols"; src: url("{{ fonts }}/NotoSansSymbols.ttf"); }
+
+:root {
+  --w: 1080px; --h: 1350px;
+  --gold: #F2C14E; --gold-soft: #E8C988; --saffron: #F28C28;
+  --ink: #FFF8EC; --ink-dim: rgba(255, 248, 236, 0.72);
+  --night: 12, 10, 34;
+  --avoid: #FF8A7A; --good: #8EE3A8;
+  --brand-orange: #E97A35; --brand-orange-text: #E47D32; --brand-tagline: #EBA36D;
+  --brand-dark: #261D16; --brand-on-dark: #FDFBF7;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { width: var(--w); height: var(--h); overflow: hidden; background: #0c0a22; }
+body { font-family: "Mukta", sans-serif; color: var(--ink); position: relative; }
+
+.bg { position: absolute; inset: 0; background: url("{{ background }}") center / cover no-repeat; }
+.shade { position: absolute; inset: 0; }
+/* Keeps the logo and date chip readable on bright skies / light rays. */
+.scrim { position: absolute; left: 0; right: 0; top: 0; height: 320px;
+         background: linear-gradient(180deg, rgba(var(--night), .62) 0%, rgba(var(--night), .30) 55%, rgba(var(--night), 0) 100%); }
+h1 { text-wrap: balance; }
+
+.topbar {
+  position: absolute; top: 44px; left: 56px; right: 56px;
+  display: flex; justify-content: space-between; align-items: center;
+}
+/* Logo colours from the UpaySutra brand mark. "Upay" is dark brown (#261D16) on
+   light backgrounds; posts are dark, so it uses the logo's cream instead. */
+.logo { display: flex; align-items: center; gap: 16px; filter: drop-shadow(0 2px 10px rgba(0,0,0,.45)); }
+.logo .mark { width: 64px; height: 64px; flex: none; }
+.logo .name { font-family: "Baloo 2"; font-weight: 700; font-size: 42px; line-height: 1; letter-spacing: .2px; }
+.logo .a { color: var(--brand-on-dark); } .logo .b { color: var(--brand-orange-text); }
+.logo .tag { margin-top: 4px; font-size: 20px; font-weight: 600; color: var(--brand-tagline); letter-spacing: .4px; }
+.chip { font-size: 28px; font-weight: 600; padding: 8px 22px; border-radius: 999px;
+        background: rgba(var(--night), .55); border: 1.5px solid rgba(242, 193, 78, .45); color: var(--gold-soft);
+        backdrop-filter: blur(6px); }
+
+.footer {
+  position: absolute; left: 56px; right: 56px; bottom: 38px;
+  display: flex; justify-content: space-between; align-items: center;
+  font-size: 26px; color: var(--ink-dim);
+}
+.swipe { color: var(--gold); font-weight: 600; }

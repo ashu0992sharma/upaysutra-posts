@@ -1,0 +1,32 @@
+# "Pause a post" — run from GitHub (works from the GitHub mobile app):
+# Actions → Pause a post → Run workflow. Target: a post id from the preview email
+# (e.g. 2026-11-02_post_am), a whole date (2026-11-02), or "all".
+name: Pause a post
+on:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: "Post id, date (YYYY-MM-DD) or 'all'"
+        required: true
+      resume:
+        description: "Tick to RESUME instead of pause"
+        type: boolean
+        default: false
+concurrency: { group: postgen-state, cancel-in-progress: false }
+jobs:
+  pause:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+      R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+      R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+      R2_BUCKET: ${{ secrets.R2_BUCKET }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.13", cache: pip }
+      - run: pip install -r requirements.txt
+      - run: python -m postgen sync down
+      - run: python -m postgen pause "${{ inputs.target }}" ${{ inputs.resume && '--resume' || '' }}
+      - run: python -m postgen sync up

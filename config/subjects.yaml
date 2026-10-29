@@ -1,0 +1,32 @@
+# Symbolic-first: no deity faces.
+subjects:
+  vishnu:    "a white conch (shankh) with golden bands and, separately beside it, the Sudarshan chakra: a spinning golden disc with many spokes and a sharp serrated outer edge, floating above a pink lotus on still water, a few tulsi leaves"
+  shiv:      "a Shivling with bel leaves and a flowing stream of water, trishul and damru beside it, Himalayan night sky with crescent moon"
+  lakshmi:   "a golden lotus with gold coins spilling from a brass kalash, rows of lit diyas, marigold garlands"
+  ganesh:    "a plate of modak beside a small mooshak figurine, red hibiscus, durva grass, ornate brass lamp"
+  hanuman:   "a saffron flag on a mountain peak at sunrise, a mace (gada) silhouette, flying clouds"
+  durga:     "a lion silhouette on a hilltop under a red sky, trident and red chunari, temple bells"
+  surya:     "a radiant sunrise over a river ghat, copper lota pouring water as arghya"
+  moon_full: "a luminous full moon over a calm river with floating diyas"
+  moon_new:  "a dark starry sky with a single lit diya and a thin silver haze, peaceful night"
+  diya:      "a cluster of lit clay diyas on a rangoli, marigold petals"
+  # No zodiac wheel: models draw duplicate/missing rashis and fake glyphs. Rashi
+  # symbols are drawn by our templates instead, so they're always correct.
+  cosmic:    "a softly glowing golden geometric mandala made only of circles, lotus petals and fine lines (no symbols, no animals, no figures), floating in a deep indigo night sky with a crescent moon and a few constellations drawn as simple dots joined by thin lines"
+
+# Festival-specific subjects, keyed by occasion slug. Missing → tag subject.
+occasions:
+  diwali:            "rows of lit clay diyas on a marble courtyard, a golden lotus and brass kalash, marigold toran, sparkling night sky"
+  dhanteras:         "gold coins and a gleaming brass kalash on a red cloth, new brass utensils, small lit diyas, marigold petals"
+  narak-chaturdashi: "fourteen small lit diyas arranged at a doorway, ubtan bowl and rangoli, dusk sky"
+  govardhan-puja:    "a small hill shaped from offerings with flowers, a flute and peacock feather, cows grazing in silhouette"
+  bhai-dooj:         "a puja thali with roli, rice, a lit diya and sweets on a silk cloth"
+  chhath:            "bamboo soop baskets with fruits and thekua at a river ghat at sunrise, water reflecting the sun"
+  ahoi-ashtami:      "a traditional Ahoi Ashtami puja setup with no figures: a clay karwa filled with water tied with red thread, a lit diya, sweet puas on a brass plate, rice grains and roli, under an early evening sky where the first stars are appearing"
+  karwa-chauth:      "a decorated clay karwa and a sieve with a lit diya under a bright rising moon in a deep blue night sky"
+  sharad-purnima:    "a bowl of kheer under a brilliant full moon on a rooftop, white flowers, silver light"
+  maha-shivratri:    "a Shivling covered in bel leaves and white flowers, rudraksha, a stream of milk, starry Himalayan night"
+  janmashtami:       "a decorated cradle with a flute and peacock feather, butter pot (makhan matki), midnight blue sky"
+  navratri:          "nine lit diyas around a kalash with mango leaves and coconut, red chunari, temple bells"
+  dussehra:          "a bow and arrow silhouette against a fiery sunset sky, marigold garlands, temple flag"
+  dev-uthani-ekadashi: "a tulsi plant in a decorated planter with sugarcane canopy, lit diyas, conch shell"

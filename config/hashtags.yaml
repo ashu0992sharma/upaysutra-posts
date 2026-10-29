@@ -1,0 +1,15 @@
+# Captions pick 3–5 from here + one occasion tag (e.g. #RamaEkadashi). Never 20+.
+general: ["#UpaySutra", "#Jyotish", "#Astrology", "#HinduDharma", "#Sanatan", "#Bhakti", "#Panchang", "#Upay"]
+by_tag:
+  vishnu:    ["#Vishnu", "#Ekadashi", "#Narayan"]
+  shiv:      ["#Mahadev", "#HarHarMahadev", "#Shiv"]
+  lakshmi:   ["#Lakshmi", "#MaaLakshmi", "#Diwali"]
+  ganesh:    ["#Ganpati", "#Ganesh"]
+  hanuman:   ["#Hanuman", "#JaiShriRam"]
+  durga:     ["#MaaDurga", "#JaiMataDi"]
+  surya:     ["#SuryaDev", "#Surya"]
+  moon_full: ["#Purnima"]
+  moon_new:  ["#Amavasya"]
+  diya:      ["#Deepak"]
+  cosmic:    ["#AajKaPanchang", "#Rashifal"]
+max_total: 5

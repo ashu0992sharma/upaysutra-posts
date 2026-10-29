@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="hi"><head><meta charset="utf-8">
+<style>
+{% include "base.css" %}
+.bg { filter: blur(14px) brightness(.55); transform: scale(1.08); }
+.shade { background: radial-gradient(ellipse at 50% 38%, rgba(var(--night),.25) 0%, rgba(var(--night),.88) 70%); }
+.card { position: absolute; left: 70px; right: 70px; top: 170px; text-align: center; }
+.kicker { font-size: 32px; font-weight: 600; color: var(--gold-soft); letter-spacing: 1px; }
+.medal { width: 250px; height: 250px; margin: 26px auto 8px; border-radius: 50%;
+         display: flex; align-items: center; justify-content: center;
+         background: radial-gradient(circle at 50% 40%, rgba(242,193,78,.30), rgba(242,193,78,.06) 70%);
+         border: 3px solid rgba(242,193,78,.75); box-shadow: 0 0 60px rgba(242,193,78,.25), inset 0 0 30px rgba(242,193,78,.18); }
+.symbol { font-family: "Symbols"; font-size: 150px; line-height: 1; color: var(--gold); }
+h1 { font-family: "Baloo 2"; font-weight: 800; font-size: 120px; line-height: 1.05; color: var(--ink);
+     text-shadow: 0 4px 18px rgba(0,0,0,.6); }
+.band { display: inline-block; margin-top: 14px; font-size: 36px; font-weight: 700; padding: 8px 34px;
+        border-radius: 999px; }
+.Excellent { background: rgba(242,193,78,.22); color: #FFD978; border: 2px solid rgba(242,193,78,.7); }
+.Good { background: rgba(142,227,168,.18); color: var(--good); border: 2px solid rgba(142,227,168,.6); }
+.Average { background: rgba(170,190,255,.16); color: #C4D0FF; border: 2px solid rgba(170,190,255,.5); }
+.Mixed { background: rgba(242,140,40,.18); color: #FFB870; border: 2px solid rgba(242,140,40,.6); }
+.Challenging { background: rgba(255,138,122,.16); color: var(--avoid); border: 2px solid rgba(255,138,122,.55); }
+.text { margin: 46px auto 0; max-width: 880px; font-size: 44px; line-height: 1.45; font-weight: 600; }
+.cta { position: absolute; left: 70px; right: 70px; bottom: 120px; text-align: center;
+       padding: 26px 30px; border-radius: 26px; background: rgba(242,193,78,.10); border: 1.5px solid rgba(242,193,78,.45); }
+.cta b { display: block; font-size: 34px; color: var(--gold); font-weight: 700; }
+.cta span { font-size: 27px; color: var(--ink-dim); }
+.basis { font-size: 22px; color: var(--ink-dim); }
+</style></head>
+<body>
+  <div class="bg"></div><div class="shade"></div><div class="scrim"></div>
+  <div class="topbar">
+    {% include "_logo.html" %}
+    <div class="chip">{{ date_chip }}</div>
+  </div>
+  <div class="card">
+    <div class="kicker">आज का राशिफल</div>
+    <div class="medal"><div class="symbol">{{ symbol }}&#xFE0E;</div></div>
+    <h1>{{ name_hi }}</h1>
+    <div class="band {{ band }}">{{ band_hi }}</div>
+    <div class="text">{{ text_hi }}</div>
+  </div>
+  <div class="cta">
+    <b>अपनी राशि का व्यक्तिगत राशिफल रोज़ देखें</b>
+    <span>UpaySutra ऐप पर · लिंक बायो में</span>
+  </div>
+  <div class="footer">
+    <div class="basis">चंद्र राशि से ग्रह-गोचर पर आधारित सामान्य फल</div>
+    <div>{{ page }}</div>
+  </div>
+</body></html>

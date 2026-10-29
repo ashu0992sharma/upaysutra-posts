@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="hi"><head><meta charset="utf-8">
+<style>
+{% include "base.css" %}
+.shade { background: linear-gradient(180deg, rgba(var(--night),.05) 0%, rgba(var(--night),.10) 40%,
+                                      rgba(var(--night),.82) 58%, rgba(var(--night),.95) 100%); }
+/* Text stacks upward from the bottom, so it fits however many timings a day has. */
+.stack { position: absolute; left: 56px; right: 56px; bottom: 96px; display: flex; flex-direction: column;
+         align-items: center; text-align: center; gap: 18px; }
+h1 { font-family: "Baloo 2"; font-weight: 800; font-size: 118px; line-height: 1.02;
+     background: linear-gradient(180deg, #FFF1C9 0%, var(--gold) 55%, var(--saffron) 100%);
+     -webkit-background-clip: text; background-clip: text; color: transparent;
+     filter: drop-shadow(0 4px 16px rgba(0,0,0,.6)); }
+.sub { margin-top: -10px; font-size: 34px; font-weight: 600; }
+.tagline { margin-top: -10px; font-size: 32px; color: var(--saffron); font-weight: 600; }
+.times { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
+.t { min-width: 290px; padding: 14px 28px; border-radius: 22px; background: rgba(255,255,255,.06);
+     border: 1.5px solid rgba(242,193,78,.35); }
+.t .l { font-size: 26px; color: var(--gold-soft); font-weight: 600; }
+.t .v { font-size: 38px; font-weight: 700; }
+.upay { width: 100%; padding: 20px 32px; border-radius: 24px; background: rgba(242,140,40,.12);
+        border: 1.5px solid rgba(242,140,40,.55); }
+.upay .k { font-size: 27px; font-weight: 700; color: var(--saffron); letter-spacing: .5px; }
+.upay .x { margin-top: 4px; font-size: 38px; font-weight: 600; line-height: 1.3; }
+</style></head>
+<body>
+  <div class="bg"></div><div class="shade"></div><div class="scrim"></div>
+  <div class="topbar">
+    {% include "_logo.html" %}
+    <div class="chip">{{ date_chip }}</div>
+  </div>
+  <div class="stack">
+    <h1>{{ headline }}</h1>
+    <div class="sub">{{ subline }}</div>
+    {% if tagline %}<div class="tagline">✦ {{ tagline }} ✦</div>{% endif %}
+    {% if times %}<div class="times">{% for t in times %}<div class="t"><div class="l">{{ t.label }}</div><div class="v">{{ t.value }}</div></div>{% endfor %}</div>{% endif %}
+    {% if upay %}<div class="upay"><div class="k">🪔 आज का उपाय</div><div class="x">{{ upay }}</div></div>{% endif %}
+  </div>
+  <div class="footer"><div>📍 {{ location }} के समयानुसार</div><div class="swipe">सेव करें, काम आएगा 🔖</div></div>
+</body></html>

@@ -1,0 +1,43 @@
+# Saturday 4:00 PM IST: build next Monday–Sunday (captions, images, manifest) and email a summary.
+name: Build next week
+on:
+  schedule:
+    - cron: "30 10 * * 6"          # 10:30 UTC Sat = 16:00 IST
+  workflow_dispatch:
+    inputs:
+      start:
+        description: "Monday to build from (YYYY-MM-DD); empty = next Monday"
+        required: false
+concurrency: { group: postgen-state, cancel-in-progress: false }
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+      R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+      R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+      R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+      R2_BUCKET: ${{ secrets.R2_BUCKET }}
+      R2_MEDIA_BUCKET: ${{ secrets.R2_MEDIA_BUCKET }}
+      MEDIA_BASE_URL: ${{ secrets.MEDIA_BASE_URL }}
+      SMTP_USER: ${{ secrets.SMTP_USER }}
+      SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+      ALERT_EMAIL_TO: ${{ secrets.ALERT_EMAIL_TO }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.13", cache: pip }
+      - run: pip install -r requirements.txt
+      - run: python -m playwright install --with-deps chromium
+      - run: python -m pytest -q          # never build with broken rules
+      - run: python -m postgen sync down
+      - run: python -m postgen build-week ${{ inputs.start && format('--start {0}', inputs.start) || '' }}
+      - if: always()
+        run: python -m postgen sync up
+      - if: failure()
+        env:
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          python -c "import os; from postgen import notify; notify.alert('Weekly build failed', 'Open the run for details: ' + os.environ['RUN_URL'])"

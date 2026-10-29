@@ -1,0 +1,26 @@
+# 8:30 PM IST: email tomorrow's posts (veto mode). Do nothing → they publish.
+name: Tomorrow's preview
+on:
+  schedule:
+    - cron: "0 15 * * *"            # 15:00 UTC = 20:30 IST
+  workflow_dispatch:
+concurrency: { group: postgen-state, cancel-in-progress: false }
+jobs:
+  preview:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+      R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+      R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+      R2_BUCKET: ${{ secrets.R2_BUCKET }}
+      SMTP_USER: ${{ secrets.SMTP_USER }}
+      SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+      ALERT_EMAIL_TO: ${{ secrets.ALERT_EMAIL_TO }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.13", cache: pip }
+      - run: pip install -r requirements.txt
+      - run: python -m postgen sync down
+      - run: python -m postgen preview

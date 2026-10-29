@@ -1,0 +1,40 @@
+captions:
+  model: claude-sonnet-5-5
+  effort: medium        # low | medium | high; captions are short creative text
+  max_attempts: 3       # regenerate when guardrail checks fail, then flag the day
+  rashifal:             # Panchang days: carousel with this many rotating rashis
+    enabled: true
+    per_day: 3
+images:
+  # Looked up 2026-10-24 at ai.google.dev/gemini-api/docs/image-generation + /pricing.
+  # No image model has a free tier now; prices are per image (standard, not batch).
+  primary_model: gemini-nano-banana-2.1      # Google's recommended image model
+  secondary_model: gemini-3.1-flash-lite-image  # cheaper/lighter, used after primary fails
+  image_size: 2K            # 1K upscaled to 1080x1350 looks soft; 2K is downscaled instead
+  aspect_ratio: "4:5"       # falls back to 3:4 + crop if a model rejects 4:5
+  price_usd:                # for state/generation_log.jsonl cost estimates
+    gemini-nano-banana-2.1: {1K: 0.0336, 2K: 0.0504, 4K: 0.113}
+    gemini-3.1-flash-lite-image: {1K: 0.0336}
+  retries: 3                # per model, exponential backoff
+  qa_model: claude-sonnet-5-5   # automatic review of every new background (postgen/imageqa.py)
+  qa_regenerations: 2           # after a rejection, try this many more images before giving up
+  reuse_window_days: 28
+  min_unused_per_tag: 3
+  generate_batch: 2
+  bootstrap_per_tag: 3
+render:
+  width: 1080
+  height: 1350
+
+automation:
+  mode: veto                 # veto: nightly preview email, posts go out unless paused · auto: no previews
+  timezone: Asia/Kolkata
+  times:                     # local publish time per slot
+    post_am: "06:00"
+    story_am: "06:15"
+    post_pm: "20:00"
+    story_pm: "20:15"
+  platforms: [instagram, facebook]
+  graph_api_version: v25.0   # Meta Graph API; check developers.facebook.com/docs/graph-api/changelog
+  late_limit_minutes: 120    # never publish a slot more than 2 h late (stale "aaj"/"kal" content)
+  calendar_warn_days: 21     # alert when the festival calendar runs out within this many days
