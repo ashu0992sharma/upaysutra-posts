@@ -28,5 +28,14 @@ jobs:
         with: { python-version: "3.13", cache: pip }
       - run: pip install -r requirements.txt
       - run: python -m postgen sync down
-      - run: python -m postgen pause "${{ inputs.target }}" ${{ inputs.resume && '--resume' || '' }}
+      - name: Pause or resume
+        env:
+          TARGET: ${{ inputs.target }}
+          RESUME: ${{ inputs.resume }}
+        run: |
+          if [ "$RESUME" = "true" ]; then
+            python -m postgen pause "$TARGET" --resume
+          else
+            python -m postgen pause "$TARGET"
+          fi
       - run: python -m postgen sync up

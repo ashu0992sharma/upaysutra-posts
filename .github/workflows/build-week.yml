@@ -31,9 +31,18 @@ jobs:
         with: { python-version: "3.13", cache: pip }
       - run: pip install -r requirements.txt
       - run: python -m playwright install --with-deps chromium
-      - run: python -m pytest -q          # never build with broken rules
+      - name: Run tests
+        run: python -m pytest -q
       - run: python -m postgen sync down
-      - run: python -m postgen build-week ${{ inputs.start && format('--start {0}', inputs.start) || '' }}
+      - name: Build the week
+        env:
+          START: ${{ inputs.start }}
+        run: |
+          if [ -n "$START" ]; then
+            python -m postgen build-week --start "$START"
+          else
+            python -m postgen build-week
+          fi
       - if: always()
         run: python -m postgen sync up
       - if: failure()
