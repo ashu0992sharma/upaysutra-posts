@@ -95,6 +95,10 @@ class MetaClient:
             stamp = lambda r: r.get("timestamp")
         elif platform == "facebook":
             rows = self._req("GET", f"{self.page_id}/posts", self.page_token, fields="id,created_time", limit=50).get("data", [])
+            # Scheduled-but-not-yet-live Page posts (made in Business Suite or earlier runs)
+            rows += [{"id": r["id"], "created_time": r.get("scheduled_publish_time")} for r in
+                     self._req("GET", f"{self.page_id}/scheduled_posts", self.page_token,
+                               fields="id,scheduled_publish_time", limit=50).get("data", [])]
             stamp = lambda r: r.get("created_time")
         else:
             raise ValueError(platform)
