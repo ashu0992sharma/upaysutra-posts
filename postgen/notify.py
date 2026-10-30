@@ -26,9 +26,14 @@ def send(subject: str, text: str, html: Optional[str] = None, images: Optional[l
         part = msg.get_payload()[-1]
         for cid, data in images or []:
             part.add_related(data, maintype="image", subtype="jpeg", cid=f"<{cid}>")
-    with smtplib.SMTP_SSL(os.getenv("SMTP_HOST", "smtp.gmail.com"), int(os.getenv("SMTP_PORT", "465"))) as s:
-        s.login(user, pwd)
-        s.send_message(msg)
+    try:
+        with smtplib.SMTP_SSL(os.getenv("SMTP_HOST", "smtp.gmail.com"), int(os.getenv("SMTP_PORT", "465"))) as s:
+            s.login(user, pwd)
+            s.send_message(msg)
+    except (smtplib.SMTPException, OSError) as e:
+        # An alert must never crash the run it is reporting on: log it and carry on.
+        print(f"!! email not sent ({type(e).__name__}: {e}). Check SMTP_USER / SMTP_PASSWORD secrets.\n"
+              f"Subject was: {subject}\n{text}")
 
 
 def alert(problem: str, detail: str = ""):

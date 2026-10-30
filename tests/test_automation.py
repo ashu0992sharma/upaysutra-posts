@@ -154,3 +154,18 @@ def test_dry_run_trial_remembers_without_touching_real_ledger(env):
     r = automation.publish_due(now=at(6, 20), dry_run=True)
     assert r["published"] == ["2026-11-02_story_am → instagram", "2026-11-02_story_am → facebook"]
     assert not automation.LEDGER.exists()
+
+
+def test_email_failure_never_crashes_the_run(monkeypatch, capsys):
+    import smtplib
+    monkeypatch.setenv("ALERT_EMAIL_TO", "a@b.c")
+    monkeypatch.setenv("SMTP_USER", "a@b.c")
+    monkeypatch.setenv("SMTP_PASSWORD", "x")
+
+    class Broken:
+        def __init__(self, *a, **k):
+            raise smtplib.SMTPServerDisconnected("Connection unexpectedly closed")
+
+    monkeypatch.setattr(notify.smtplib, "SMTP_SSL", Broken)
+    notify.send("test", "body")          # must not raise
+    assert "email not sent" in capsys.readouterr().out
