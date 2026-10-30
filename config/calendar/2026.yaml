@@ -90,5 +90,9 @@ timings:
     - [Pratahkala Muhurat, "6:40 AM – 8:50 AM"]
   2026-11-15:  # Chhath Puja — /festivals/chhath-puja/chhath-puja-date-time.html?year=2026
     - [Sandhya Arghya (suryast), "5:28 PM"]
-  # TODO before the 2 Nov run: Dhanteras, Diwali (Lakshmi Puja), Bhai Dooj muhurats,
-  # Rama Ekadashi parana (6 Nov).
+  2026-11-06:  # Dhanteras — /festivals/dhanteras/festivals-dhanteras-puja-timings.html?year=2026 (Drik, New Delhi)
+    - [Puja Muhurat, "6:02 PM – 7:57 PM"]
+  2026-11-08:  # Narak Chaturdashi bath + Lakshmi Puja — /festivals/abhyangsnan/… and /festivals/lakshmipuja/… (Drik, New Delhi)
+    - [Abhyang Snan, "5:41 AM – 6:38 AM"]
+    - [Lakshmi Puja Muhurat, "5:54 PM – 7:50 PM"]
+  # TODO: Bhai Dooj (11 Nov) and Rama Ekadashi parana (6 Nov, Ekadashi is 5 Nov) muhurats.

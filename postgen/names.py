@@ -204,6 +204,7 @@ TIMING_LABEL_HI = {
     "Pratahkala Muhurat": "प्रातःकाल मुहूर्त", "Sandhya Arghya (suryast)": "संध्या अर्घ्य (सूर्यास्त)",
     "Purnima tithi aarambh": "पूर्णिमा तिथि आरंभ",
     "Rahu Kaal": "राहु काल", "Sunrise": "सूर्योदय", "Abhijit Muhurat": "अभिजीत मुहूर्त",
+    "Abhyang Snan": "अभ्यंग स्नान", "Lakshmi Puja Muhurat": "लक्ष्मी पूजा मुहूर्त",
 }
 
 
