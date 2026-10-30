@@ -16,6 +16,7 @@ subjects:
 
 # Festival-specific subjects, keyed by occasion slug. Missing → tag subject.
 occasions:
+  choti-diwali:      "a row of small clay diyas on a doorstep step, a brass lamp and rangoli dots, a small sweet plate with a few laddoos"
   diwali:            "rows of lit clay diyas on a marble courtyard, a golden lotus and brass kalash, marigold toran, sparkling night sky"
   dhanteras:         "gold coins and a gleaming brass kalash on a red cloth, new brass utensils, small lit diyas, marigold petals"
   narak-chaturdashi: "fourteen small lit diyas arranged at a doorway, ubtan bowl and rangoli, dusk sky"

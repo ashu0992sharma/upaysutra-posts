@@ -27,6 +27,11 @@ LOG_FILE = STATE_DIR / "generation_log.jsonl"
 
 # ---------------- providers ----------------
 
+class _Verdict:
+    def __init__(self, ok: bool, issues: list[str]):
+        self.ok, self.issues = ok, issues
+
+
 class ProviderError(Exception):
     def __init__(self, msg: str, quota: bool = False):
         super().__init__(msg)
@@ -107,11 +112,31 @@ def subject_for(tag: str, occasion_slug: Optional[str] = None) -> str:
 def build_prompt(tag: str, occasion_slug: Optional[str] = None, variation: int = 0) -> str:
     style = load_yaml("style")
     subject = subject_for(tag, occasion_slug)
-    parts = [style["master_style"].strip(), f"Subject: {subject}."]
+    look = (style.get("looks") or {}).get(occasion_slug or "")
+    parts = [look.strip() if look else style["master_style"].strip(), f"Subject: {subject}."]
     if style.get("variations"):
         parts.append(style["variations"][variation % len(style["variations"])])
     parts += [style["composition"].strip(), "Avoid: " + style["negative"].strip()]
     return " ".join(parts)
+
+
+def fingerprint(img: Image.Image) -> int:
+    """64-bit perceptual hash: near-identical pictures give small Hamming distances."""
+    small = img.convert("L").resize((8, 8), Image.LANCZOS)
+    px = list(small.getdata())
+    mean = sum(px) / 64
+    return sum(1 << i for i, v in enumerate(px) if v > mean)
+
+
+NEAR_DUPLICATE_BITS = 14   # out of 64; below this two images look like the same picture
+
+
+def near_duplicate(img: Image.Image, others: list[Path]) -> Optional[Path]:
+    fp = fingerprint(img)
+    for o in others:
+        if bin(fp ^ fingerprint(Image.open(o))).count("1") <= NEAR_DUPLICATE_BITS:
+            return o
+    return None
 
 
 def to_post_size(data: bytes) -> Image.Image:
@@ -223,14 +248,18 @@ class Library:
     def generate(self, tag: str, occasion_slug: Optional[str] = None) -> Path:
         """Generate one image into backgrounds/<tag>/, retrying with the next
         variation when automatic review rejects it."""
-        tries = 1 + (self.cfg.get("qa_regenerations", 2) if self.qa else 0)
+        tries = 1 + self.cfg.get("qa_regenerations", 2)
         last = None
         for _ in range(tries):
             path = self._generate_once(tag, occasion_slug)
-            if not self.qa:
-                return path
             subject = json.loads(path.with_suffix(".json").read_text())["subject"]
-            verdict = self.qa.check(Image.open(path), subject)
+            dup = near_duplicate(Image.open(path), [p for p in self.images(tag) if p != path])
+            if dup is not None:
+                verdict = _Verdict(False, [f"too similar to {dup.name}; make it look different"])
+            elif self.qa:
+                verdict = self.qa.check(Image.open(path), subject)
+            else:
+                return path
             if verdict.ok:
                 return path
             last = verdict.issues

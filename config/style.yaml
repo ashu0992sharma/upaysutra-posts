@@ -24,3 +24,15 @@ variations:
   - "Close, intimate framing; background of softly blurred temple lamps (bokeh)."
   - "Wide, serene framing; subject smaller and centred under a vast starry sky."
   - "Gentle rain-washed atmosphere, glistening surfaces, calm reflective light."
+
+# Festival images replace the shared master_style with their own setting, so
+# festivals don't all look like the same indigo night with a lamp. Keyed by
+# occasion slug (see config/occasions.yaml). Panchang images keep master_style.
+looks:
+  dhanteras: "bright late-afternoon daylight in a sunlit marble courtyard, warm cream and polished brass tones, soft gold reflections, no night sky"
+  choti-diwali: "dusk on a quiet doorstep, soft violet and amber twilight, small clay lamps glowing on the steps"
+  diwali: "deep navy night with a rooftop full of lit diyas and fairy-light glow, saffron, marigold and gold, festive sparkle"
+  karwa-chauth: "moonlit terrace at night, cool silver-blue light, a bright full moon, gentle mist"
+  ahoi-ashtami: "early evening twilight, the first stars appearing, dusky violet sky and warm clay tones"
+  govardhan-puja: "bright morning light in a village courtyard, green and earthy tones, fresh flowers"
+  bhai-dooj: "warm afternoon light in a decorated home, rangoli colours, brass and marigold"

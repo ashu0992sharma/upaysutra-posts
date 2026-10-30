@@ -15,16 +15,32 @@ def png(w, h, color=(200, 120, 40)):
     return buf.getvalue()
 
 
+def noise_png(seed, w=896, h=1120):
+    """A distinct picture per seed (random texture, so perceptual hashes differ)."""
+    import random
+    rnd = random.Random(seed)
+    img = Image.new("RGB", (64, 80))
+    img.putdata([(rnd.randrange(256), rnd.randrange(256), rnd.randrange(256)) for _ in range(64 * 80)])
+    buf = io.BytesIO()
+    img.resize((w, h)).save(buf, "PNG")
+    return buf.getvalue()
+
+
 class FakeProvider:
-    def __init__(self, name="fake", fail=0, quota=False, size=(896, 1120)):
+    """Returns a distinct picture per call, or the same one when same=True."""
+
+    def __init__(self, name="fake", fail=0, quota=False, size=(896, 1120), same=False):
         self.name, self.fail, self.quota, self.size, self.calls = name, fail, quota, size, []
+        self.same = same
 
     def generate(self, prompt, aspect):
         self.calls.append((prompt, aspect))
         if self.fail:
             self.fail -= 1
             raise bg.ProviderError(f"{self.name} down", quota=self.quota)
-        return png(*self.size)
+        if self.same:
+            return png(*self.size)
+        return noise_png(len(self.calls), *self.size)
 
 
 @pytest.fixture
@@ -188,3 +204,22 @@ def test_auto_review_gives_up_and_falls_back(lib_factory):
     lib.qa = FakeQA(bad=99)
     c = lib.choose(date(2026, 11, 8), "lakshmi", "diwali", priority=1)
     assert c.status == "fallback" and "auto-review" in c.note
+
+
+def test_near_duplicate_is_regenerated_even_without_review(lib_factory):
+    prov = FakeProvider(same=True)
+    lib = lib_factory(prov)
+    lib.bootstrap(["diya"], 1, report=lambda m: None)           # one existing image
+    # FakeProvider returns the same picture each time → every new one is a near-duplicate
+    with pytest.raises(bg.ProviderError, match="too similar"):
+        lib.generate("diya", "karwa-chauth")
+    assert len(list((lib.root / "_rejected").glob("*.png"))) >= 1
+
+
+def test_distinct_pictures_are_not_flagged():
+    from PIL import ImageDraw
+    a = Image.new("RGB", (400, 500), (20, 20, 60))
+    b = Image.new("RGB", (400, 500), (20, 20, 60))
+    ImageDraw.Draw(b).rectangle([0, 0, 399, 249], fill=(240, 200, 60))   # very different layout
+    assert bg.fingerprint(a) != bg.fingerprint(b)
+    assert bin(bg.fingerprint(a) ^ bg.fingerprint(b)).count("1") > bg.NEAR_DUPLICATE_BITS
