@@ -15,6 +15,7 @@ Credentials come from the environment (GitHub Actions secrets):
 import json
 import os
 import time
+from datetime import datetime, timedelta
 from typing import Optional
 
 import requests
@@ -83,6 +84,27 @@ class MetaClient:
 
     def ig_story(self, url: str) -> str:
         return self._ig_publish(self._ig_container(image_url=url, media_type="STORIES"))
+
+    def recent_posts(self, platform: str, around: datetime, window_min: int = 60) -> list[str]:
+        """Posts already on the account within `window_min` of `around`: a manual post,
+        or one from an earlier run. Returns their ids (empty = nothing there)."""
+        lo, hi = around - timedelta(minutes=window_min), around + timedelta(minutes=window_min)
+        if platform == "instagram":
+            rows = self._req("GET", f"{self.ig_id}/media", self.token, fields="id,timestamp", limit=50).get("data", [])
+            rows += self._req("GET", f"{self.ig_id}/stories", self.token, fields="id,timestamp").get("data", [])
+            stamp = lambda r: r.get("timestamp")
+        elif platform == "facebook":
+            rows = self._req("GET", f"{self.page_id}/posts", self.page_token, fields="id,created_time", limit=50).get("data", [])
+            stamp = lambda r: r.get("created_time")
+        else:
+            raise ValueError(platform)
+        hits = []
+        for r in rows:
+            t = stamp(r)
+            if t and lo <= datetime.fromisoformat(t.replace("+0000", "+00:00")) <= hi:
+                hits.append(r["id"])
+        return hits
+
 
     # ---------- Facebook Page ----------
     def _fb_photo(self, url: str, published: bool, message: str = "") -> str:

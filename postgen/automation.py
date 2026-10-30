@@ -136,6 +136,13 @@ def publish_due(now: Optional[datetime] = None, client=None, dry_run: bool = Fal
             continue
         for platform in todo:
             try:
+                if not dry_run:
+                    existing = client.recent_posts(platform, at, cfg_window())
+                    if existing:
+                        done[platform] = {"skipped": existing, "at": now.isoformat()}
+                        report["skipped"].append(f"{item['id']} → {platform}: something is already posted "
+                                                 f"around {at:%H:%M} ({', '.join(existing)}), not posting again")
+                        continue
                 ref = "dry-run" if dry_run else _publish_one(client, platform, item, urls)
                 done[platform] = {"id": ref, "at": now.isoformat()}
                 report["published"].append(f"{item['id']} → {platform}")
@@ -146,6 +153,10 @@ def publish_due(now: Optional[datetime] = None, client=None, dry_run: bool = Fal
         notify.alert("Some posts did not go out",
                      "\n".join(["Failed:", *report["failed"], "", "Skipped:", *report["skipped"]]))
     return report
+
+
+def cfg_window() -> int:
+    return int(cfg().get("duplicate_window_minutes", 60))
 
 
 def _media_urls(item: dict, dry_run: bool) -> list[str]:

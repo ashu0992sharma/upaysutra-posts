@@ -35,8 +35,11 @@ def env(tmp_path, monkeypatch):
 
 
 class FakeMeta:
-    def __init__(self, fail=()):
-        self.calls, self.fail = [], set(fail)
+    def __init__(self, fail=(), existing=()):
+        self.calls, self.fail, self.existing = [], set(fail), list(existing)
+
+    def recent_posts(self, platform, around, window_min=60):
+        return [e[1] for e in self.existing if e[0] == platform]
 
     def __getattr__(self, name):
         def call(*a):
@@ -169,3 +172,12 @@ def test_email_failure_never_crashes_the_run(monkeypatch, capsys):
     monkeypatch.setattr(notify.smtplib, "SMTP_SSL", Broken)
     notify.send("test", "body")          # must not raise
     assert "email not sent" in capsys.readouterr().out
+
+
+def test_slot_skipped_when_something_already_posted(env):
+    m = FakeMeta(existing=[("instagram", "17900000001")])
+    r = automation.publish_due(now=at(6, 3), client=m)
+    assert [c[0] for c in m.calls] == ["fb_carousel"]              # Instagram left alone
+    assert any("already posted" in s and "17900000001" in s for s in r["skipped"])
+    automation.publish_due(now=at(6, 20), client=m)                 # never retried later
+    assert [c[0] for c in m.calls].count("ig_carousel") == 0

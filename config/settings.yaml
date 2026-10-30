@@ -36,5 +36,6 @@ automation:
     story_pm: "20:15"
   platforms: [instagram, facebook]
   graph_api_version: v25.0   # Meta Graph API; check developers.facebook.com/docs/graph-api/changelog
+  duplicate_window_minutes: 60   # before publishing, skip a slot if any post exists within ±60 min
   late_limit_minutes: 120    # never publish a slot more than 2 h late (stale "aaj"/"kal" content)
   calendar_warn_days: 21     # alert when the festival calendar runs out within this many days
