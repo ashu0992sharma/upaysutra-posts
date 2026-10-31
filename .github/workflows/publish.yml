@@ -1,11 +1,12 @@
-# Publishes whatever is due (6:00/6:15 AM and 8:00/8:15 PM IST). Runs every 15 min
-# around those times because GitHub's scheduler can start jobs late; a post is
-# published once, and never more than 2 h late.
+# Publishes whatever is due. Runs every 5 minutes through the morning and evening
+# posting windows (IST): GitHub's scheduler can skip or delay runs, so frequent runs
+# mean a missed run is caught a few minutes later. Each post goes out once and never
+# more than 2 h late; runs are queued one at a time, so they can't overlap.
 name: Publish due posts
 on:
   schedule:
-    - cron: "0,15,30,45 0,14 * * *"   # 05:30–06:15 and 19:30–20:15 IST
-    - cron: "0,30 1,15 * * *"         # 06:30–07:00 and 20:30–21:00 IST (catch-up)
+    - cron: "*/5 0,1 * * *"       # 05:30–07:29 IST (6:00 and 6:15 AM slots)
+    - cron: "*/5 14,15 * * *"     # 19:30–20:59 IST (8:00 and 8:15 PM slots)
   workflow_dispatch:
 concurrency: { group: postgen-state, cancel-in-progress: false }
 jobs:
