@@ -111,6 +111,8 @@ def publish_due(now: Optional[datetime] = None, client=None, dry_run: bool = Fal
     ledger_path = LEDGER.with_name("published_dryrun.json") if dry_run else LEDGER
     ledger = _load(ledger_path, {})
     report = {"published": [], "skipped": [], "failed": []}
+    # Ids of posts this system published: they must never count as "already posted".
+    ours = {v["id"] for slot in ledger.values() for v in slot.values() if isinstance(v, dict) and "id" in v}
     for item in _load(MANIFEST, []):
         at = datetime.fromisoformat(item["publish_at"])
         if at > now:
@@ -137,7 +139,7 @@ def publish_due(now: Optional[datetime] = None, client=None, dry_run: bool = Fal
         for platform in todo:
             try:
                 if not dry_run:
-                    existing = client.recent_posts(platform, at, cfg_window())
+                    existing = client.recent_posts(platform, at, cfg_window(), exclude=ours)
                     if existing:
                         done[platform] = {"skipped": existing, "at": now.isoformat()}
                         report["skipped"].append(f"{item['id']} → {platform}: something is already posted "
@@ -145,6 +147,7 @@ def publish_due(now: Optional[datetime] = None, client=None, dry_run: bool = Fal
                         continue
                 ref = "dry-run" if dry_run else _publish_one(client, platform, item, urls)
                 done[platform] = {"id": ref, "at": now.isoformat()}
+                ours.add(ref)
                 report["published"].append(f"{item['id']} → {platform}")
             except Exception as e:                          # noqa: BLE001
                 report["failed"].append(f"{item['id']} → {platform}: {e}")

@@ -38,8 +38,8 @@ class FakeMeta:
     def __init__(self, fail=(), existing=()):
         self.calls, self.fail, self.existing = [], set(fail), list(existing)
 
-    def recent_posts(self, platform, around, window_min=60):
-        return [e[1] for e in self.existing if e[0] == platform]
+    def recent_posts(self, platform, around, window_min=60, exclude=()):
+        return [e[1] for e in self.existing if e[0] == platform and e[1] not in exclude]
 
     def __getattr__(self, name):
         def call(*a):
@@ -181,3 +181,12 @@ def test_slot_skipped_when_something_already_posted(env):
     assert any("already posted" in s and "17900000001" in s for s in r["skipped"])
     automation.publish_due(now=at(6, 20), client=m)                 # never retried later
     assert [c[0] for c in m.calls].count("ig_carousel") == 0
+
+
+def test_own_earlier_post_does_not_block_the_next_slot(env):
+    """Regression: the 6:00 carousel published at 6:48 must not make the 6:15 story look like a duplicate."""
+    m = FakeMeta()
+    automation.publish_due(now=at(6, 50), client=m)            # carousel + story both due in one run
+    assert [c[0] for c in m.calls] == ["ig_carousel", "fb_carousel", "ig_story", "fb_story"]
+    r = automation.publish_due(now=at(6, 51), client=m)
+    assert not any("already posted" in s for s in r["skipped"])

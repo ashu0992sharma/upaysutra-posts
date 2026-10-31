@@ -85,7 +85,7 @@ class MetaClient:
     def ig_story(self, url: str) -> str:
         return self._ig_publish(self._ig_container(image_url=url, media_type="STORIES"))
 
-    def recent_posts(self, platform: str, around: datetime, window_min: int = 60) -> list[str]:
+    def recent_posts(self, platform: str, around: datetime, window_min: int = 60, exclude=()) -> list[str]:
         """Posts already on the account within `window_min` of `around`: a manual post,
         or one from an earlier run. Returns their ids (empty = nothing there)."""
         lo, hi = around - timedelta(minutes=window_min), around + timedelta(minutes=window_min)
@@ -104,6 +104,8 @@ class MetaClient:
             raise ValueError(platform)
         hits = []
         for r in rows:
+            if r["id"] in exclude:          # posts this system published itself are not duplicates
+                continue
             t = stamp(r)
             if t and lo <= datetime.fromisoformat(t.replace("+0000", "+00:00")) <= hi:
                 hits.append(r["id"])
