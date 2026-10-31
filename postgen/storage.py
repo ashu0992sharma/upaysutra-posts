@@ -11,11 +11,12 @@ Without them, storage is "off": local runs work as before and publishing is dry-
 """
 import io
 import os
+from datetime import date, timedelta
 from pathlib import Path
 
 from PIL import Image
 
-from postgen.config import ROOT
+from postgen.config import ROOT, STATE_DIR
 
 SYNCED_DIRS = ["backgrounds", "state", "output"]
 
@@ -49,11 +50,30 @@ def upload_media(png: Path, key: str) -> str:
     return media_url(key)
 
 
-def sync_down():
-    """Restore the working state from R2 before a run."""
+def light_keep(key: str, today: date) -> bool:
+    """What publishing, previews and pauses need: the schedule JSON files, plus the
+    rendered images for yesterday to the day after tomorrow (a few MB, not the library)."""
+    rel = key[len("state/"):]
+    if rel.startswith("state/") and rel.count("/") == 1 and rel.endswith(".json"):   # manifest, ledgers, pauses, usage
+        return True
+    if rel.startswith("output/"):
+        name = rel.split("/")[1] if rel.count("/") >= 1 else ""
+        try:
+            d = date.fromisoformat(name[:10])
+        except ValueError:
+            return False
+        return today - timedelta(days=1) <= d <= today + timedelta(days=2)
+    return False
+
+
+def sync_down(light: bool = False):
+    """Restore the working state from R2 before a run. light=True fetches only what publishing needs."""
     s3, bucket = _client(), os.environ["R2_BUCKET"]
+    today = date.today()
     for page in s3.get_paginator("list_objects_v2").paginate(Bucket=bucket, Prefix="state/"):
         for obj in page.get("Contents", []):
+            if light and not light_keep(obj["Key"], today):
+                continue
             local = ROOT / obj["Key"][len("state/"):]
             if local.exists() and local.stat().st_size == obj["Size"] and not obj["Key"].endswith(".json"):
                 continue
@@ -61,18 +81,22 @@ def sync_down():
             s3.download_file(bucket, obj["Key"], str(local))
 
 
-def sync_up():
-    """Save the working state to R2 after a run (new/changed files only)."""
+def sync_up(light: bool = False):
+    """Save the working state to R2 after a run (new/changed files only). light=True saves the JSON state only."""
     s3, bucket = _client(), os.environ["R2_BUCKET"]
     remote = {}
     for page in s3.get_paginator("list_objects_v2").paginate(Bucket=bucket, Prefix="state/"):
         for obj in page.get("Contents", []):
             remote[obj["Key"]] = obj["Size"]
-    for d in SYNCED_DIRS:
-        for f in (ROOT / d).rglob("*"):
+    for d in (["state"] if light else SYNCED_DIRS):
+        base = ROOT / d if d != "state" else STATE_DIR
+        for f in base.rglob("*"):
             if not f.is_file() or f.name == ".DS_Store":
                 continue
-            key = "state/" + str(f.relative_to(ROOT))
+            if light and f.suffix != ".json":
+                continue
+            key = "state/" + str(f.relative_to(ROOT if d != "state" else STATE_DIR)) if d != "state" \
+                else "state/state/" + str(f.relative_to(STATE_DIR))
             if remote.get(key) == f.stat().st_size and f.suffix != ".json":
                 continue
             s3.upload_file(str(f), bucket, key)

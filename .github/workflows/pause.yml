@@ -27,7 +27,7 @@ jobs:
       - uses: actions/setup-python@v5
         with: { python-version: "3.13", cache: pip }
       - run: pip install -r requirements.txt
-      - run: python -m postgen sync down
+      - run: python -m postgen sync down --light
       - name: Pause or resume
         env:
           TARGET: ${{ inputs.target }}
@@ -38,4 +38,4 @@ jobs:
           else
             python -m postgen pause "$TARGET"
           fi
-      - run: python -m postgen sync up
+      - run: python -m postgen sync up --light

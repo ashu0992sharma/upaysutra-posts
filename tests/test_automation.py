@@ -190,3 +190,16 @@ def test_own_earlier_post_does_not_block_the_next_slot(env):
     assert [c[0] for c in m.calls] == ["ig_carousel", "fb_carousel", "ig_story", "fb_story"]
     r = automation.publish_due(now=at(6, 51), client=m)
     assert not any("already posted" in s for s in r["skipped"])
+
+
+def test_light_sync_keeps_schedule_and_nearby_days_only():
+    from datetime import date
+    from postgen.storage import light_keep
+    today = date(2026, 10, 31)
+    assert light_keep("state/state/manifest.json", today)
+    assert light_keep("state/state/published.json", today)
+    assert light_keep("state/output/2026-10-31_Sat/1_post_6AM/1_panchang.png", today)
+    assert light_keep("state/output/2026-11-02_Mon/1_post_6AM/1_panchang.png", today)
+    assert not light_keep("state/output/2026-11-10_Tue/1_post_6AM/1_panchang.png", today)
+    assert not light_keep("state/backgrounds/cosmic/x.png", today)
+    assert not light_keep("state/output/_data/2026-10-26/captions.json", today)

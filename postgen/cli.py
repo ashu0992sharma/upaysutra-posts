@@ -360,7 +360,8 @@ def cmd_sync(args):
     from postgen import storage
     if not storage.enabled():
         sys.exit("R2 storage not configured (R2_* env vars)")
-    (storage.sync_down if args.direction == "down" else storage.sync_up)()
+    fn = storage.sync_down if args.direction == "down" else storage.sync_up
+    fn(light=args.light)
 
 
 def main():
@@ -419,6 +420,7 @@ def main():
 
     sp = sub.add_parser("sync", help="copy working state from/to R2 (GitHub Actions)")
     sp.add_argument("direction", choices=["down", "up"])
+    sp.add_argument("--light", action="store_true", help="only what publishing needs (fast)")
     sp.set_defaults(func=cmd_sync)
 
     args = p.parse_args()
