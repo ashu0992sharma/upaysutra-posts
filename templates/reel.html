@@ -27,7 +27,9 @@
   </div>
   <div class="mid">
     {% if kicker %}<div class="kicker">✦ {{ kicker }} ✦</div>{% endif %}
-    <div class="text">{{ text }}</div>
+    {% if ": " in text %}{% set label, value = text.split(": ", 1) %}
+    <div class="text">{{ label }}<br><span style="white-space:nowrap">{{ value }}</span></div>
+    {% else %}<div class="text">{{ text }}</div>{% endif %}
     {% if cta %}<div class="handle">Upaysutra · लिंक बायो में</div>{% endif %}
   </div>
 </body></html>

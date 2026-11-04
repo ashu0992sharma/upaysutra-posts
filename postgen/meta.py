@@ -59,18 +59,18 @@ class MetaClient:
     def _ig_container(self, **params) -> str:
         return self._req("POST", f"{self.ig_id}/media", self.token, **params)["id"]
 
-    def _ig_wait(self, container: str, tries: int = 20):
+    def _ig_wait(self, container: str, tries: int = 20, every: int = 3):
         for _ in range(tries):
             status = self._req("GET", container, self.token, fields="status_code").get("status_code")
             if status == "FINISHED":
                 return
             if status in ("ERROR", "EXPIRED"):
                 raise MetaError(f"Instagram container {container} {status}")
-            self.sleep(3)
-        raise MetaError(f"Instagram container {container} not ready after {tries * 3}s")
+            self.sleep(every)
+        raise MetaError(f"Instagram container {container} not ready after {tries * every}s")
 
-    def _ig_publish(self, container: str) -> str:
-        self._ig_wait(container)
+    def _ig_publish(self, container: str, tries: int = 20, every: int = 3) -> str:
+        self._ig_wait(container, tries, every)
         return self._req("POST", f"{self.ig_id}/media_publish", self.token, creation_id=container)["id"]
 
     def ig_image(self, url: str, caption: str) -> str:
@@ -81,6 +81,12 @@ class MetaClient:
         for c in children:
             self._ig_wait(c)
         return self._ig_publish(self._ig_container(media_type="CAROUSEL", children=",".join(children), caption=caption))
+
+    def ig_reel(self, video_url: str, caption: str, cover_url: str = "") -> str:
+        params = {"media_type": "REELS", "video_url": video_url, "caption": caption, "share_to_feed": "true"}
+        if cover_url:
+            params["cover_url"] = cover_url
+        return self._ig_publish(self._ig_container(**params), tries=60, every=5)     # video processing: up to 5 min
 
     def ig_story(self, url: str) -> str:
         return self._ig_publish(self._ig_container(image_url=url, media_type="STORIES"))
@@ -104,7 +110,8 @@ class MetaClient:
             raise ValueError(platform)
         hits = []
         for r in rows:
-            if r["id"] in exclude:          # posts this system published itself are not duplicates
+            # FB post ids are "<page>_<object>"; a reel's post is "<page>_<video id>".
+            if r["id"] in exclude or r["id"].split("_")[-1] in exclude:          # posts this system published itself are not duplicates
                 continue
             t = stamp(r)
             if t and lo <= datetime.fromisoformat(t.replace("+0000", "+00:00")) <= hi:
@@ -127,6 +134,19 @@ class MetaClient:
         ids = [self._fb_photo(u, published=False) for u in urls]
         media = json.dumps([{"media_fbid": i} for i in ids])
         return self._req("POST", f"{self.page_id}/feed", self.page_token, message=message, attached_media=media)["id"]
+
+    def fb_reel(self, video_url: str, description: str) -> str:
+        """Page Reels API: start an upload, let Facebook fetch the hosted MP4, then publish."""
+        path = f"{self.page_id}/video_reels"
+        video_id = self._req("POST", path, self.page_token, upload_phase="start")["video_id"]
+        resp = self.http.request("POST", f"https://rupload.facebook.com/video-upload/{self.base.rsplit('/', 1)[-1]}/{video_id}",
+                                 headers={"Authorization": f"OAuth {self.page_token}", "file_url": video_url}, timeout=120)
+        body = resp.json() if resp.content else {}
+        if resp.status_code >= 400 or not body.get("success"):
+            raise MetaError(f"Facebook reel upload: {resp.status_code} {body}")
+        self._req("POST", path, self.page_token, upload_phase="finish", video_id=video_id,
+                  video_state="PUBLISHED", description=description)
+        return video_id
 
     def fb_story(self, url: str) -> str:
         photo = self._fb_photo(url, published=False)

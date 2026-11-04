@@ -213,7 +213,8 @@ def segment(frame: Path, audio: Path, seconds: float, out: Path, fps: int = 30):
     cmd = [ffmpeg(), "-y", "-loglevel", "error", "-i", str(frame), "-i", str(audio),
            "-filter_complex", f"[0:v]{vf}[v];[1:a]apad,atrim=0:{seconds:.3f},aresample=44100[a]",
            "-map", "[v]", "-map", "[a]", "-t", f"{seconds:.3f}", "-r", str(fps),
-           "-c:v", "libx264", "-preset", "medium", "-crf", "20", "-c:a", "aac", "-b:a", "128k", str(out)]
+           "-c:v", "libx264", "-preset", "medium", "-crf", "20", "-g", str(fps * 2),   # IG: keyframe every 2–5 s
+           "-c:a", "aac", "-b:a", "128k", "-ar", "48000", str(out)]
     subprocess.run(cmd, check=True)
 
 

@@ -50,6 +50,13 @@ def upload_media(png: Path, key: str) -> str:
     return media_url(key)
 
 
+def upload_video(mp4: Path, key: str) -> str:
+    """Upload a reel as-is (H.264/AAC MP4); returns its public URL."""
+    _client().put_object(Bucket=os.environ["R2_MEDIA_BUCKET"], Key=key, Body=mp4.read_bytes(), ContentType="video/mp4",
+                         CacheControl="public, max-age=31536000")
+    return media_url(key)
+
+
 def light_keep(key: str, today: date) -> bool:
     """What publishing, previews and pauses need: the schedule JSON files, plus the
     rendered images for yesterday to the day after tomorrow (a few MB, not the library)."""

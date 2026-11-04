@@ -287,20 +287,26 @@ def write_posting_plan(week: Path, caps: list[dict]):
 
 
 def cmd_reel(args):
+    build_reel(args.date, args.start or args.date)
+
+
+def build_reel(d: date, start: date) -> Path:
     """Build the day's reel: voiced script → one slide per line → MP4 (+ cover)."""
     import shutil
     import tempfile
     from postgen import reel, render
-    week = DATA_DIR / str(args.start or args.date)
+    week = DATA_DIR / str(start)
     caps = json.loads((week / "captions.json").read_text(encoding="utf-8"))
-    cap = next(c for c in caps if c["date"] == str(args.date) and "llm" in c)
-    day = PanchangSource(location_from_env()).day(args.date)
+    cap = next((c for c in caps if c["date"] == str(d) and "llm" in c), None)
+    if cap is None:
+        raise RuntimeError(f"no 6 AM caption for {d}")
+    day = PanchangSource(location_from_env()).day(d)
     lib = backgrounds.Library(qa=_image_qa())
-    bg = lib.assigned(cap["tag"], args.date) or lib.choose(args.date, cap["tag"], cap["slug"], cap["priority"]).path
+    bg = lib.assigned(cap["tag"], d) or lib.choose(d, cap["tag"], cap["slug"], cap["priority"]).path
     writer = reel.ReelWriter(CaptionWriter())
     lines, usage = writer.script(day, cap)
     cfg = writer.cfg
-    out = day_folder(args.date, day.weekday) / "1_reel_6AM"
+    out = day_folder(d, day.weekday) / "1_reel_6AM"
     out.mkdir(parents=True, exist_ok=True)
     kicker = cap["image_headline"]
     with tempfile.TemporaryDirectory() as tmp:
@@ -322,12 +328,16 @@ def cmd_reel(args):
         shutil.copy(tmp / "f0.png", out / "cover.png")
     (out / "script.json").write_text(json.dumps([ln.__dict__ for ln in lines], ensure_ascii=False, indent=2),
                                      encoding="utf-8")
-    (out / "caption_instagram.txt").write_text(cap["caption"] + "\n", encoding="utf-8")
-    (out / "caption_facebook.txt").write_text((cap.get("caption_facebook") or cap["caption"]) + "\n", encoding="utf-8")
+    post = out.parent / "1_post_6AM"                 # same captions as the 6 AM post (already rendered)
+    for name, fallback in (("caption_instagram.txt", cap["caption"]),
+                           ("caption_facebook.txt", cap.get("caption_facebook") or cap["caption"])):
+        text = (post / name).read_text(encoding="utf-8") if (post / name).exists() else fallback + "\n"
+        (out / name).write_text(text, encoding="utf-8")
     chars = sum(len(ln.say) for ln in lines)
     print(f"{out / 'reel.mp4'}  ·  {total:.1f} s  ·  {len(lines)} lines  ·  {chars} voice characters")
     for ln in lines:
         print(f"  [{ln.source}] {ln.say}")
+    return out / "reel.mp4"
 
 
 def cmd_build_week(args):
@@ -359,6 +369,12 @@ def cmd_build_week(args):
             cmd_render(Namespace(start=start, date=d))
         except Exception as e:                       # noqa: BLE001
             failures.append(f"{d} render: {e}")
+    if automation.cfg().get("am_post") == "reel":
+        for d in days:
+            try:
+                build_reel(d, start)
+            except Exception as e:                   # noqa: BLE001 - the 6 AM carousel goes out instead
+                failures.append(f"{d} reel: {e} (the 6 AM carousel will be posted instead)")
     items = automation.update_manifest(days)
     summary = [f"Built {len(items)} posts/stories for {days[0]} to {days[-1]}.", ""]
     for d in days:

@@ -26,6 +26,7 @@ from postgen.occasions import OccasionPicker
 MANIFEST = STATE_DIR / "manifest.json"
 LEDGER = STATE_DIR / "published.json"
 PAUSES = STATE_DIR / "pauses.json"
+REEL_DIR = "1_reel_6AM"
 SLOT_DIRS = {"post_am": "1_post_6AM", "story_am": "2_story_6AM", "post_pm": "3_post_8PM", "story_pm": "4_story_8PM"}
 SLOT_NAMES = {"post_am": "6 AM post", "story_am": "6 AM story", "post_pm": "8 PM post", "story_pm": "8 PM story"}
 
@@ -58,11 +59,15 @@ def items_for_day(day_dir: Path) -> list[dict]:
             continue
         hh, mm = map(int, c["times"][slot].split(":"))
         story = slot.startswith("story")
+        kind = "story" if story else ("carousel" if len(pngs) > 1 else "image")
+        reel = day_dir / REEL_DIR / "reel.mp4"
+        if slot == "post_am" and c.get("am_post") == "reel" and reel.exists():
+            folder, kind, pngs = reel.parent, "reel", [reel, reel.parent / "cover.png"]
         cap = lambda name: (folder / name).read_text(encoding="utf-8").strip() if (folder / name).exists() else ""
         items.append({
             "id": f"{d}_{slot}", "date": str(d), "slot": slot,
             "publish_at": datetime(d.year, d.month, d.day, hh, mm, tzinfo=tz).isoformat(),
-            "kind": "story" if story else ("carousel" if len(pngs) > 1 else "image"),
+            "kind": kind,                                   # reel files: [video, cover]
             "files": [str(p.relative_to(OUTPUT_DIR)) for p in pngs],
             "caption_instagram": "" if story else cap("caption_instagram.txt"),
             "caption_facebook": "" if story else cap("caption_facebook.txt"),
@@ -165,11 +170,17 @@ def cfg_window() -> int:
 def _media_urls(item: dict, dry_run: bool) -> list[str]:
     if dry_run or not storage.enabled():
         return [f"(dry-run)/{f}" for f in item["files"]]
-    return [storage.upload_media(OUTPUT_DIR / f, "media/" + str(Path(f).with_suffix(".jpg"))) for f in item["files"]]
+    return [storage.upload_video(OUTPUT_DIR / f, "media/" + f) if f.endswith(".mp4") else
+            storage.upload_media(OUTPUT_DIR / f, "media/" + str(Path(f).with_suffix(".jpg"))) for f in item["files"]]
 
 
 def _publish_one(client, platform: str, item: dict, urls: list[str]) -> str:
     kind = item["kind"]
+    if kind == "reel":
+        if platform == "instagram":
+            return client.ig_reel(urls[0], item["caption_instagram"], urls[1])
+        if platform == "facebook":
+            return client.fb_reel(urls[0], item["caption_facebook"])
     if platform == "instagram":
         if kind == "story":
             return client.ig_story(urls[0])
@@ -221,6 +232,11 @@ def _thumb(png: Path, width: int = 360) -> bytes:
     return buf.getvalue()
 
 
+def _reel_script(item: dict) -> str:
+    path = OUTPUT_DIR / Path(item["files"][0]).parent / "script.json"
+    return "\n".join(ln["say"] for ln in _load(path, []))
+
+
 def preview_email(d: date):
     """Veto-mode email: tomorrow's posts with thumbnails, captions and how to pause."""
     items = [i for i in _load(MANIFEST, []) if i["date"] == str(d)]
@@ -236,11 +252,17 @@ def preview_email(d: date):
         t = datetime.fromisoformat(i["publish_at"]).strftime("%I:%M %p").lstrip("0")
         html.append(f"<h3>{t} · {SLOT_NAMES[i['slot']]} · id <code>{i['id']}</code></h3>")
         for n, f in enumerate(i["files"]):
+            if f.endswith(".mp4"):
+                continue                                   # the reel's cover.png stands in for it
             cid = f"{i['id']}_{n}"
             imgs.append((cid, _thumb(OUTPUT_DIR / f)))
             html.append(f"<img src='cid:{cid}' width='180' style='margin:2px'>")
         if i["caption_instagram"]:
             html.append("<pre style='white-space:pre-wrap;font-family:sans-serif'>" + i["caption_instagram"] + "</pre>")
-        text.append(f"{t} {SLOT_NAMES[i['slot']]} ({i['id']}): {len(i['files'])} image(s)")
+        what = "reel" if i["kind"] == "reel" else f"{len(i['files'])} image(s)"
+        if i["kind"] == "reel":
+            html.append("<p><b>Reel</b> (cover shown). Voiceover script:</p><pre style='white-space:pre-wrap;"
+                        "font-family:sans-serif'>" + _reel_script(i) + "</pre>")
+        text.append(f"{t} {SLOT_NAMES[i['slot']]} ({i['id']}): {what}")
     notify.send(f"Tomorrow's posts ({d:%a %d %b}) — reply not needed",
                 "\n".join(text) + f"\n\nPause: {pause_url}", "\n".join(html), imgs)

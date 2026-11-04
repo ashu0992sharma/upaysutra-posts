@@ -203,3 +203,62 @@ def test_light_sync_keeps_schedule_and_nearby_days_only():
     assert not light_keep("state/output/2026-11-10_Tue/1_post_6AM/1_panchang.png", today)
     assert not light_keep("state/backgrounds/cosmic/x.png", today)
     assert not light_keep("state/output/_data/2026-10-26/captions.json", today)
+
+
+def _add_reel(env_out):
+    reel = env_out / "2026-11-02_Mon" / "1_reel_6AM"
+    reel.mkdir()
+    (reel / "reel.mp4").write_bytes(b"mp4")
+    Image.new("RGB", (10, 10)).save(reel / "cover.png")
+    (reel / "caption_instagram.txt").write_text("IG reel caption")
+    (reel / "caption_facebook.txt").write_text("FB reel caption")
+    from datetime import date
+    automation.update_manifest([date(2026, 11, 2)])
+
+
+def test_6am_reel_replaces_carousel_when_built(env):
+    _add_reel(automation.OUTPUT_DIR)
+    items = {i["id"]: i for i in automation._load(automation.MANIFEST, [])}
+    am = items["2026-11-02_post_am"]
+    assert am["kind"] == "reel" and am["files"][0].endswith("reel.mp4") and am["files"][1].endswith("cover.png")
+    m = FakeMeta()
+    automation.publish_due(now=at(6, 2), client=m)
+    assert [c[0] for c in m.calls] == ["ig_reel", "fb_reel"]
+    assert m.calls[0][1][1] == "IG reel caption" and m.calls[0][1][2].endswith("cover.png")
+
+
+def test_carousel_is_the_fallback_without_a_reel(env):
+    items = {i["id"]: i for i in automation._load(automation.MANIFEST, [])}
+    assert items["2026-11-02_post_am"]["kind"] == "carousel"
+
+
+def test_instagram_reel_container(client):
+    c, http = client
+    c.ig_reel("https://m/r.mp4", "cap", "https://m/c.jpg")
+    assert ("POST", "IG/media", {"media_type": "REELS", "video_url": "https://m/r.mp4", "caption": "cap",
+                                 "share_to_feed": "true", "cover_url": "https://m/c.jpg"}) in http.reqs
+
+
+def test_facebook_reel_three_phase_upload(monkeypatch):
+    for k, v in {"META_ACCESS_TOKEN": "T", "META_PAGE_ID": "PAGE", "META_IG_USER_ID": "IG"}.items():
+        monkeypatch.setenv(k, v)
+    reqs = []
+
+    class HTTP:
+        def request(self, method, url, data=None, params=None, headers=None, timeout=None):
+            reqs.append((url, data or params, headers))
+            if "rupload" in url:
+                body = {"success": True}
+            elif (params or {}).get("fields") == "access_token":
+                body = {"access_token": "PT"}
+            elif (data or {}).get("upload_phase") == "start":
+                body = {"video_id": "V1"}
+            else:
+                body = {"success": True}
+            return type("R", (), {"status_code": 200, "content": b"x", "json": lambda s: body})()
+
+    c = meta_mod.MetaClient(session=HTTP(), sleep=lambda s: None)
+    assert c.fb_reel("https://m/r.mp4", "desc") == "V1"
+    up = next(r for r in reqs if "rupload" in r[0])
+    assert up[0].endswith("/v25.0/V1") and up[2]["file_url"] == "https://m/r.mp4"
+    assert reqs[-1][1] == {"upload_phase": "finish", "video_id": "V1", "video_state": "PUBLISHED", "description": "desc"}
