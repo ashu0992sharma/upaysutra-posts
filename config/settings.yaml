@@ -46,5 +46,10 @@ reels:
   tts_model: eleven_multilingual_v2
   voice_settings: {stability: 0.6, similarity_boost: 0.8, style: 0.15, speed: 0.92}
   pause_seconds: 0.35                  # gap after each spoken line
-  max_script_chars: 320                # keeps reels ~15–25 s and credits low
+  max_script_chars: 320
+  # What the voice hears instead (screen text is unchanged). Add words here when the voice says them wrong.
+  pronounce:
+    UpaySutra: उपाय सूत्र
+    Upaysutra: उपाय सूत्र
+    रमा एकादशी: रामा एकादशी                # keeps reels ~15–25 s and credits low
   fps: 30

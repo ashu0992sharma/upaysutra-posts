@@ -37,3 +37,9 @@ def test_script_rules():
     assert any("digits" in p for p in w.problems(_script(upay={"say": "शाम 6 बजे दीपक जलाएँ।", "show": "दीपक"}), _Day(), {}))
     assert any("follow" in p for p in w.problems(_script(hook={"say": "UpaySutra को फॉलो करें।", "show": "फॉलो"}), _Day(), {}))
     assert any("Devanagari" in p for p in w.problems(_script(meaning={"say": "Very auspicious day", "show": "शुभ"}), _Day(), {}))
+
+
+def test_pronunciation_map_only_changes_voice_text():
+    from postgen.reel import for_voice
+    cfg = {"pronounce": {"UpaySutra": "उपाय सूत्र", "रमा एकादशी": "रामा एकादशी"}}
+    assert for_voice("आज रमा एकादशी है, UpaySutra को फॉलो करें।", cfg) == "आज रामा एकादशी है, उपाय सूत्र को फॉलो करें।"

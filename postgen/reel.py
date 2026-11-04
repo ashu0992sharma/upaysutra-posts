@@ -167,7 +167,14 @@ class ReelWriter:
 
 # ---------------- voice (ElevenLabs) ----------------
 
+def for_voice(text: str, cfg: dict) -> str:
+    for word, said in (cfg.get("pronounce") or {}).items():
+        text = text.replace(word, said)
+    return text
+
+
 def tts(text: str, out: Path, cfg: dict) -> Path:
+    text = for_voice(text, cfg)
     key = os.getenv("ELEVENLABS_API_KEY")
     if not key:
         raise RuntimeError("ELEVENLABS_API_KEY is not set")
