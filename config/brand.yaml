@@ -51,3 +51,8 @@ story_sticker_text: "App डाउनलोड करें"
 # Line under the CTA on story images. Automated stories (Meta API) can't carry
 # link stickers, so point to the bio link.
 story_cta_sub: "👆 लिंक बायो में · UpaySutra ऐप"
+
+# Last line of every reel (spoken + on screen). Code adds it, so it never varies.
+reel_cta:
+  say: "ऐसी ही रोज़ की जानकारी के लिए UpaySutra को फॉलो करें।"
+  show: "रोज़ की जानकारी के लिए फॉलो करें"

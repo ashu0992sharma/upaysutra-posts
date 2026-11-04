@@ -10,3 +10,4 @@ pillow>=13
 playwright==1.64.1
 jinja2>=3.1
 boto3>=1.43
+imageio-ffmpeg>=0.5

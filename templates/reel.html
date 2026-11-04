@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="hi"><head><meta charset="utf-8">
+<style>
+{% include "base.css" %}
+:root { --w: 1080px; --h: 1920px; }
+/* Darken only the band behind the text so the artwork stays visible above and below. */
+.shade { background: linear-gradient(180deg, rgba(var(--night),0) 22%, rgba(var(--night),.62) 40%,
+                     rgba(var(--night),.62) 62%, rgba(var(--night),.15) 80%, rgba(var(--night),.45) 100%); }
+.topbar { top: 150px; }
+/* Text sits in the middle band: reels UI covers the top ~140px, the bottom ~380px and the right edge. */
+.mid { position: absolute; left: 90px; right: 150px; top: 520px; bottom: 420px; display: flex; flex-direction: column;
+       justify-content: center; align-items: center; text-align: center; gap: 28px; }
+.kicker { font-size: 38px; font-weight: 700; color: var(--saffron); letter-spacing: .5px;
+          text-shadow: 0 2px 10px rgba(0,0,0,.85); }
+.text { font-family: "Baloo 2"; font-weight: 800; font-size: {{ 104 if hook else 88 }}px; line-height: 1.2; color: var(--ink);
+        text-wrap: balance; text-shadow: 0 4px 22px rgba(0,0,0,.75); }
+.hook .text { background: linear-gradient(180deg, #FFF1C9 0%, var(--gold) 55%, var(--saffron) 100%);
+              -webkit-background-clip: text; background-clip: text; color: transparent; filter: drop-shadow(0 4px 16px rgba(0,0,0,.7)); text-shadow: none; }
+.cta .text { font-size: 76px; }
+.handle { font-size: 40px; font-weight: 700; color: var(--gold); }
+</style></head>
+<body class="{{ 'hook' if hook else '' }} {{ 'cta' if cta else '' }}">
+  <div class="bg"></div><div class="shade"></div><div class="scrim"></div>
+  <div class="topbar">
+    {% include "_logo.html" %}
+    <div class="chip">{{ date_chip }}</div>
+  </div>
+  <div class="mid">
+    {% if kicker %}<div class="kicker">✦ {{ kicker }} ✦</div>{% endif %}
+    <div class="text">{{ text }}</div>
+    {% if cta %}<div class="handle">Upaysutra · लिंक बायो में</div>{% endif %}
+  </div>
+</body></html>

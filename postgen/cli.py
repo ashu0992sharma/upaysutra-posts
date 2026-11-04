@@ -286,6 +286,50 @@ def write_posting_plan(week: Path, caps: list[dict]):
     (week / "POSTING_PLAN.txt").write_text("\n".join(lines), encoding="utf-8")
 
 
+def cmd_reel(args):
+    """Build the day's reel: voiced script → one slide per line → MP4 (+ cover)."""
+    import shutil
+    import tempfile
+    from postgen import reel, render
+    week = DATA_DIR / str(args.start or args.date)
+    caps = json.loads((week / "captions.json").read_text(encoding="utf-8"))
+    cap = next(c for c in caps if c["date"] == str(args.date) and "llm" in c)
+    day = PanchangSource(location_from_env()).day(args.date)
+    lib = backgrounds.Library(qa=_image_qa())
+    bg = lib.assigned(cap["tag"], args.date) or lib.choose(args.date, cap["tag"], cap["slug"], cap["priority"]).path
+    writer = reel.ReelWriter(CaptionWriter())
+    lines, usage = writer.script(day, cap)
+    cfg = writer.cfg
+    out = day_folder(args.date, day.weekday) / "1_reel_6AM"
+    out.mkdir(parents=True, exist_ok=True)
+    kicker = cap["image_headline"]
+    with tempfile.TemporaryDirectory() as tmp:
+        tmp = Path(tmp)
+        jobs, audio, segs = [], [], []
+        for i, ln in enumerate(lines):
+            first, last = i == 0, i == len(lines) - 1
+            html = render.reel_frame_html(day, bg, ln.show, kicker="" if first or last else kicker, hook=first, cta=last)
+            jobs.append((html, tmp / f"f{i}.png", render.STORY))
+        render.to_png(jobs)
+        total = 0.0
+        for i, ln in enumerate(lines):
+            a = reel.tts(ln.say, tmp / f"a{i}.mp3", cfg)
+            secs = reel.media_seconds(a) + cfg["pause_seconds"]
+            reel.segment(tmp / f"f{i}.png", a, secs, tmp / f"s{i}.mp4", cfg["fps"])
+            segs.append(tmp / f"s{i}.mp4")
+            total += secs
+        reel.concat(segs, out / "reel.mp4")
+        shutil.copy(tmp / "f0.png", out / "cover.png")
+    (out / "script.json").write_text(json.dumps([ln.__dict__ for ln in lines], ensure_ascii=False, indent=2),
+                                     encoding="utf-8")
+    (out / "caption_instagram.txt").write_text(cap["caption"] + "\n", encoding="utf-8")
+    (out / "caption_facebook.txt").write_text((cap.get("caption_facebook") or cap["caption"]) + "\n", encoding="utf-8")
+    chars = sum(len(ln.say) for ln in lines)
+    print(f"{out / 'reel.mp4'}  ·  {total:.1f} s  ·  {len(lines)} lines  ·  {chars} voice characters")
+    for ln in lines:
+        print(f"  [{ln.source}] {ln.say}")
+
+
 def cmd_build_week(args):
     """Build a whole week unattended: captions (6 AM + 8 PM), images, manifest, summary email."""
     from argparse import Namespace
@@ -399,6 +443,11 @@ def main():
     sp.add_argument("--date", type=date.fromisoformat, required=True)
     sp.add_argument("--start", type=date.fromisoformat, help="week folder (default: --date)")
     sp.set_defaults(func=cmd_render)
+
+    sp = sub.add_parser("reel", help="build the day's reel (voiceover + slides → MP4)")
+    sp.add_argument("--date", type=date.fromisoformat, required=True)
+    sp.add_argument("--start", type=date.fromisoformat, help="week folder (default: --date)")
+    sp.set_defaults(func=cmd_reel)
 
     sp = sub.add_parser("build-week", help="unattended: build next week's posts, manifest, summary email")
     sp.add_argument("--start", type=date.fromisoformat, help="Monday to start from (default: next Monday)")
