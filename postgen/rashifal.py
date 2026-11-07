@@ -5,6 +5,7 @@ the Moon sign), computed offline. The LLM only phrases them; the band label,
 rashi names and which grahas are favourable/challenging all come from here.
 """
 import json
+import random
 from dataclasses import dataclass
 from datetime import date, datetime, time
 from zoneinfo import ZoneInfo
@@ -65,17 +66,27 @@ def rashi_facts(index: int, d: date, tz: str) -> RashiFacts:
 
 
 def rashis_for(d: date, per_day: int = 3) -> list[int]:
-    """Rashis featured on `d`. Each new date takes the next `per_day` rashis in
-    order, so all 12 are covered every 4 Panchang days; a date keeps its rashis
-    when regenerated."""
-    state = {"cursor": 0, "assigned": {}}
+    """Rashis featured on `d`. Every 12/per_day Panchang days cover all 12 rashis,
+    but each cycle is shuffled, so the trios and their order change; a new cycle
+    never repeats a rashi from the day before. A date keeps its rashis when
+    regenerated."""
+    state = {"queue": [], "assigned": {}}
     if ROTATION_FILE.exists():
         state = json.loads(ROTATION_FILE.read_text())
     key = d.isoformat()
     if key not in state["assigned"]:
-        c = state["cursor"]
-        state["assigned"][key] = [(c + i) % 12 for i in range(per_day)]
-        state["cursor"] = (c + per_day) % 12
+        queue = state.get("queue") or []
+        if len(queue) < per_day:
+            prev = set(state["assigned"][max(state["assigned"])]) if state["assigned"] else set()
+            rng = random.Random(key)
+            fresh = [i for i in range(12) if i not in queue]
+            rng.shuffle(fresh)
+            while set((queue + fresh)[:per_day]) & prev:   # don't open with yesterday's rashis
+                rng.shuffle(fresh)
+            queue = queue + fresh
+        state["assigned"][key] = sorted(queue[:per_day])
+        state["queue"] = queue[per_day:]
+        state.pop("cursor", None)
         ROTATION_FILE.parent.mkdir(parents=True, exist_ok=True)
         ROTATION_FILE.write_text(json.dumps(state, indent=2))
     return state["assigned"][key]

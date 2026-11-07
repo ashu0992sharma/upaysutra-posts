@@ -1,6 +1,6 @@
 """Caption validation and assembly, with a scripted fake Anthropic client."""
 import re
-from datetime import date
+from datetime import date, timedelta
 from types import SimpleNamespace
 
 import pytest
@@ -110,7 +110,7 @@ def readings_for(rashis):
 def test_panchang_day_template(rotation):
     day = PanchangSource(location_from_env()).day(date(2026, 10, 28))  # Wednesday
     occ = OccasionPicker().pick(day)
-    rashis = [rashifal.rashi_facts(i, day.date, "Asia/Kolkata") for i in (0, 1, 2)]
+    rashis = [rashifal.rashi_facts(i, day.date, "Asia/Kolkata") for i in rashifal.rashis_for(day.date)]
     cap = CaptionWriter(FakeClient([panchang_draft(readings_for(rashis))])).write(day, occ, None)
     assert "⚠️ Rahu Kaal: 12:05 PM – 1:28 PM" in cap.caption
     assert "Abhijit" not in cap.caption          # not shown on Wednesdays
@@ -118,8 +118,8 @@ def test_panchang_day_template(rotation):
     assert cap.image_headline == "आज का पंचांग"
     assert cap.image_subline.endswith("तक)")  # Panchang subline keeps its computed time
     # rashifal: 3 rotating rashis, band labels from code, app CTA instead of the 1-in-3 mention
-    assert [sl["rashi"] for sl in cap.rashifal_slides] == ["Mesh", "Vrishabh", "Mithun"]
-    assert f"♈ Mesh ({rashis[0].band_roman}):" in cap.caption
+    assert [sl["rashi"] for sl in cap.rashifal_slides] == [r.roman for r in rashis]
+    assert f"{rashis[0].symbol} {rashis[0].roman} ({rashis[0].band_roman}):" in cap.caption
     assert "Baaki rashiyon ka rashifal" in cap.caption and "Apni kundli" not in cap.caption
 
 
@@ -128,6 +128,16 @@ def test_rashifal_rotation_covers_all_12_and_is_stable(rotation):
     picked = [rashifal.rashis_for(d) for d in days]
     assert sorted(i for p in picked for i in p) == list(range(12))
     assert rashifal.rashis_for(days[1]) == picked[1]   # regen keeps the same rashis
+
+
+def test_rashifal_rotation_mixes_trios(rotation):
+    days = [date(2026, 10, 26) + timedelta(days=i) for i in range(12)]
+    picked = [rashifal.rashis_for(d) for d in days]
+    for c in range(0, 12, 4):                          # each 4-day cycle still covers all 12
+        assert sorted(i for p in picked[c:c + 4] for i in p) == list(range(12))
+    assert len({tuple(p) for p in picked}) == 12       # trios change between cycles
+    for a, b in zip(picked, picked[1:]):               # no rashi two days running
+        assert not set(a) & set(b)
 
 
 @pytest.mark.parametrize("mutate, reason", [
@@ -140,7 +150,7 @@ def test_rashifal_rotation_covers_all_12_and_is_stable(rotation):
 def test_rashifal_readings_validated(rotation, mutate, reason):
     day = PanchangSource(location_from_env()).day(date(2026, 10, 28))
     occ = OccasionPicker().pick(day)
-    rashis = [rashifal.rashi_facts(i, day.date, "Asia/Kolkata") for i in (0, 1, 2)]
+    rashis = [rashifal.rashi_facts(i, day.date, "Asia/Kolkata") for i in rashifal.rashis_for(day.date)]
     good = readings_for(rashis)
     bad = [dict(r) for r in good]
     mutate(bad)
@@ -180,7 +190,7 @@ def test_curated_timings_shown_and_offered_to_llm():
 def test_facebook_caption_gets_clickable_link(rotation):
     day = PanchangSource(location_from_env()).day(date(2026, 10, 28))
     occ = OccasionPicker().pick(day)
-    rashis = [rashifal.rashi_facts(i, day.date, "Asia/Kolkata") for i in (0, 1, 2)]
+    rashis = [rashifal.rashi_facts(i, day.date, "Asia/Kolkata") for i in rashifal.rashis_for(day.date)]
     cap = CaptionWriter(FakeClient([panchang_draft(readings_for(rashis))])).write(day, occ, None)
     assert "(link in bio)" in cap.caption and "play.google.com" not in cap.caption
     assert "(link in bio)" not in cap.caption_facebook
