@@ -8,6 +8,10 @@ on:
       start:
         description: "Monday to build from (YYYY-MM-DD); empty = next Monday"
         required: false
+      force:
+        description: "Regenerate days that are already built"
+        type: boolean
+        default: false
 concurrency: { group: postgen-state, cancel-in-progress: false }
 jobs:
   build:
@@ -38,11 +42,12 @@ jobs:
       - name: Build the week
         env:
           START: ${{ inputs.start }}
+          FORCE: ${{ inputs.force && '--force' || '' }}
         run: |
           if [ -n "$START" ]; then
-            python -m postgen build-week --start "$START"
+            python -m postgen build-week --start "$START" $FORCE
           else
-            python -m postgen build-week
+            python -m postgen build-week $FORCE
           fi
       - if: always()
         run: python -m postgen sync up

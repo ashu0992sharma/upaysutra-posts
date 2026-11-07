@@ -352,26 +352,38 @@ def cmd_build_week(args):
     if blockers:
         notify.alert(f"Week of {start} NOT built", "\n".join(probs))
         sys.exit(1)
-    failures = []
-    for slot in ("morning", "evening"):
-        try:
-            cmd_captions(Namespace(start=start, days=args.days, week=start, slot=slot))
-        except SystemExit:
-            raise
-        except Exception as e:                       # noqa: BLE001
-            failures.append(f"{slot} captions: {e}")
     week = DATA_DIR / str(start)
+    failures, skipped = [], []
+    recaptioned = {"morning": set(), "evening": set()}
+    for slot, name in (("morning", "captions.json"), ("evening", "evening.json")):
+        for d in days:
+            if not args.force and _has_caption(week / name, d):
+                continue                             # already written: no LLM call
+            recaptioned[slot].add(d)
+            try:
+                cmd_captions(Namespace(start=d, days=1, week=start, slot=slot))
+            except SystemExit:
+                raise
+            except Exception as e:                   # noqa: BLE001
+                failures.append(f"{d} {slot} caption: {e}")
     for path, label in ((week / "captions.json", "6 AM caption"), (week / "evening.json", "8 PM caption")):
         for c in (json.loads(path.read_text(encoding="utf-8")) if path.exists() else []):
-            if "error" in c:
+            if "error" in c and date.fromisoformat(c["date"]) in days:
                 failures.append(f"{c['date']} {label} failed after retries (slot will be skipped): {c['error'][:200]}")
     for d in days:
+        new_caption = d in recaptioned["morning"] or d in recaptioned["evening"]
+        if not args.force and not new_caption and _images_built(d):
+            skipped.append(f"{d:%a} images")
+            continue
         try:
             cmd_render(Namespace(start=start, date=d))
         except Exception as e:                       # noqa: BLE001
             failures.append(f"{d} render: {e}")
     if automation.cfg().get("am_post") == "reel":
         for d in days:
+            if not args.force and d not in recaptioned["morning"] and _reel_built(d):
+                skipped.append(f"{d:%a} reel")
+                continue
             try:
                 build_reel(d, start)
             except Exception as e:                   # noqa: BLE001 - the 6 AM carousel goes out instead
@@ -380,10 +392,29 @@ def cmd_build_week(args):
     summary = [f"Built {len(items)} posts/stories for {days[0]} to {days[-1]}.", ""]
     for d in days:
         summary.append(f"{d:%a %d %b}: " + ", ".join(i["slot"] for i in items if i["date"] == str(d)))
+    if skipped:
+        summary += ["", "Already built, not regenerated: " + ", ".join(skipped)]
     if probs or failures:
         summary += ["", "Needs attention:", *probs, *failures]
     notify.send(f"Week of {start:%d %b} built" + (" — needs attention" if probs or failures else ""), "\n".join(summary))
     print("\n".join(summary))
+
+
+def _has_caption(path: Path, d: date) -> bool:
+    """True when the week file already holds a good (non-error) caption for d."""
+    caps = json.loads(path.read_text(encoding="utf-8")) if path.exists() else []
+    return any(c["date"] == str(d) and "llm" in c for c in caps)
+
+
+def _images_built(d: date) -> bool:
+    """All four slot folders for d already have their image."""
+    out = day_folder(d, d.strftime("%A"))
+    return all(any((out / folder).glob("*.png")) for folder in SLOTS.values())
+
+
+def _reel_built(d: date) -> bool:
+    reel = day_folder(d, d.strftime("%A")) / "1_reel_6AM"
+    return (reel / "reel.mp4").exists() and (reel / "cover.png").exists()
 
 
 def _next_monday() -> date:
@@ -469,6 +500,7 @@ def main():
     sp = sub.add_parser("build-week", help="unattended: build next week's posts, manifest, summary email")
     sp.add_argument("--start", type=date.fromisoformat, help="Monday to start from (default: next Monday)")
     sp.add_argument("--days", type=int, default=7)
+    sp.add_argument("--force", action="store_true", help="regenerate days that are already built")
     sp.set_defaults(func=cmd_build_week)
 
     sp = sub.add_parser("publish", help="publish every post whose time has come")
