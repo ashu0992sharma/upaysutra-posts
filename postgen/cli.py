@@ -314,7 +314,8 @@ def build_reel(d: date, start: date) -> Path:
         jobs, audio, segs = [], [], []
         for i, ln in enumerate(lines):
             first, last = i == 0, i == len(lines) - 1
-            html = render.reel_frame_html(day, bg, ln.show, kicker="" if first or last else kicker, hook=first, cta=last)
+            k = "आज का राशिफल" if ln.rashi else "" if first or last else kicker
+            html = render.reel_frame_html(day, bg, ln.show, kicker=k, hook=first, cta=last, rashi=ln.rashi)
             jobs.append((html, tmp / f"f{i}.png", render.STORY))
         render.to_png(jobs)
         total = 0.0
@@ -332,7 +333,7 @@ def build_reel(d: date, start: date) -> Path:
     for name, fallback in (("caption_instagram.txt", cap["caption"]),
                            ("caption_facebook.txt", cap.get("caption_facebook") or cap["caption"])):
         text = (post / name).read_text(encoding="utf-8") if (post / name).exists() else fallback + "\n"
-        (out / name).write_text(text, encoding="utf-8")
+        (out / name).write_text(text.replace(" (swipe karein 👉)", ""), encoding="utf-8")   # nothing to swipe on a reel
     chars = sum(len(ln.say) for ln in lines)
     print(f"{out / 'reel.mp4'}  ·  {total:.1f} s  ·  {len(lines)} lines  ·  {chars} voice characters")
     for ln in lines:

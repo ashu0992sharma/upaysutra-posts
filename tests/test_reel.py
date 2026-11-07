@@ -1,5 +1,6 @@
 from datetime import datetime
 
+from postgen import reel
 from postgen.reel import ReelWriter, spoken_span, spoken_time
 
 
@@ -43,3 +44,12 @@ def test_pronunciation_map_only_changes_voice_text():
     from postgen.reel import for_voice
     cfg = {"pronounce": {"UpaySutra": "उपाय सूत्र", "रमा एकादशी": "रामा एकादशी"}}
     assert for_voice("आज रमा एकादशी है, UpaySutra को फॉलो करें।", cfg) == "आज रामा एकादशी है, उपाय सूत्र को फॉलो करें।"
+
+
+def test_panchang_reel_reads_each_rashi_from_the_carousel_slides():
+    slides = [{"rashi": "Mesh", "symbol": "♈", "name_hi": "मेष", "band": "Good", "band_hi": "शुभ",
+               "text_hi": "आज धैर्य से काम लें, दिन संतुलित रहेगा।"}]
+    (ln,) = reel.rashi_lines({"rashifal_slides": slides})
+    assert ln.say == "मेष राशि — शुभ। आज धैर्य से काम लें, दिन संतुलित रहेगा।"
+    assert ln.show == slides[0]["text_hi"] and ln.rashi == slides[0] and ln.source == "code"
+    assert reel.rashi_lines({}) == []

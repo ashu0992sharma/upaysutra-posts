@@ -81,11 +81,12 @@ def morning_story_html(day: DayFacts, background: Path, cap: dict) -> str:
 
 
 def reel_frame_html(day: DayFacts, background: Path, text: str, kicker: str = "",
-                    hook: bool = False, cta: bool = False) -> str:
-    """One reel slide (1080x1920): a single spoken line, large, in the safe middle band."""
+                    hook: bool = False, cta: bool = False, rashi: dict = None) -> str:
+    """One reel slide (1080x1920): a single spoken line, large, in the safe middle band.
+    With `rashi` (a rashifal slide dict) it shows the rashi's symbol, name and band above the line."""
     return _env.get_template("reel.html").render(
         fonts=FONTS.as_uri(), background=background.as_uri(), date_chip=date_chip(day.date, day.weekday),
-        text=text, kicker=kicker, hook=hook, cta=cta)
+        text=text, kicker=kicker, hook=hook, cta=cta, rashi=rashi)
 
 
 def cta_html(day: DayFacts, background: Path, page: str) -> str:

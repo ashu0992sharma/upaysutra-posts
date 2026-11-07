@@ -49,6 +49,7 @@ class Line:
     say: str          # spoken (Devanagari)
     show: str         # on screen (Devanagari, short)
     source: str       # "llm" | "code"
+    rashi: Optional[dict] = None   # rashifal slide this line reads out (Panchang days)
 
 
 def timing_line(day: DayFacts, kind: str) -> Optional[Line]:
@@ -65,6 +66,12 @@ def timing_line(day: DayFacts, kind: str) -> Optional[Line]:
         said = spoken_span(*parts) if len(parts) == 2 else spoken_time(parts[0])
         return Line(f"{label_hi} {said} है।", f"{label_hi}: {names.timing_value_hi(value)}", "code")
     return None
+
+
+def rashi_lines(cap: dict) -> list[Line]:
+    """Panchang days: one line per rashi, read from the carousel's checked rashifal slides."""
+    return [Line(f"{sl['name_hi']} राशि — {sl['band_hi']}। {sl['text_hi']}", sl["text_hi"], "code", sl)
+            for sl in cap.get("rashifal_slides") or []]
 
 
 # ---------------- script (LLM) ----------------
@@ -159,7 +166,8 @@ class ReelWriter:
                 lines = [Line(data[k]["say"], data[k]["show"], "llm") for k in ("hook", "meaning", "upay")]
                 t = timing_line(day, kind)
                 if t:
-                    lines.insert(2, t)                       # hook, meaning, timing, upay, CTA
+                    lines.insert(2, t)                       # hook, meaning, timing, [rashis], upay, CTA
+                lines[-1:-1] = rashi_lines(cap)
                 lines.append(Line(self.cta["say"], self.cta["show"], "code"))
                 return lines, usage
         raise CaptionError(f"reel script for {day.date} still invalid: {feedback}")
