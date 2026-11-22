@@ -119,10 +119,11 @@ CTA instead.
 
 ## Open items
 
-- [ ] **GitHub Actions blocked since ~20 Nov 2026** ("recent account payments have failed or
-      your spending limit needs to be increased"). Nothing posted 21–22 Nov and the 21 Nov
-      weekly build never ran. Fix the payment in GitHub → Billing and plans. Posts for
-      22 Nov–6 Dec were built locally and are in R2, waiting.
+- [ ] **Make the repo private again on/after 1 Dec 2026.** It was made public on 22 Nov to
+      unblock Actions: the free 2,000 minutes ran out ~20 Nov, and GitHub can't charge the
+      Indian card for extra (RBI rules; no self-serve mandate on this account). Nothing posted
+      21–22 Nov; 22 Nov–6 Dec were built locally and are in R2. Check December's minutes in
+      Billing → Usage stay under 2,000 with the new schedule.
 - [ ] Change the Cloudflare cron to the new publish times (see How it runs).
 
 - [ ] Drik muhurat times for **Bhai Dooj (11 Nov 2026)**. Missing, so the post goes out without them.
@@ -140,7 +141,8 @@ CTA instead.
   and reused on a 4-week rotation.
 - ElevenLabs: voice, Starter plan or above for commercial use. Panchang reels use
   about 2× the characters of the others.
-- Cloudflare R2: free tier. GitHub Actions: free tier.
+- Cloudflare R2: free tier. GitHub Actions: free tier, 2,000 min/month on a private repo; paid
+  overage isn't possible with the Indian card, so the account is blocked when it runs out.
 
 ## Decision log
 
@@ -156,5 +158,6 @@ CTA instead.
 - 2026-11-07 · Panchang reels read the 3 rashis inside the reel · otherwise rashifal vanished from the feed on reel days
 - 2026-11-07 · Weekly build skips anything already built; `--force` rebuilds · a second build shouldn't spend API credits again
 - 2026-11-07 · This file is the shared context across Claude Code, Cowork and claude.ai · discussions happen in several tools
+- 2026-11-22 · Repo public until 1 Dec · free minutes ran out and GitHub can't auto-charge an Indian card; history checked for secrets first
 - 2026-11-22 · Publish workflow takes an optional post id that skips the 2 h late limit · manual catch-up after the Actions billing block
 - 2026-11-22 · Publisher runs only at slot times (6 runs + 2 fallbacks a day) instead of every 5 min · ~50 mostly idle runs a day used ~1,000 Actions minutes by 20 Nov
