@@ -9,7 +9,7 @@ the source of truth for *how*.
 tool? Ask it to write the decision as one log line (date · what · why) and add it
 here (Cowork can edit this file directly), or paste it into Claude Code.
 
-Last updated: 2026-11-07
+Last updated: 2026-11-22
 
 ---
 
@@ -36,8 +36,10 @@ Owner: Ashutosh Sharma. Repo: `ashu0992sharma/upaysutra-posts` (private).
 - **Veto mode:** posts go out unless paused. To stop one, run the **pause** workflow
   with a post id (`2026-11-12_post_am`), a date, or `all`. Plan: switch to `auto` mode
   (no preview emails) after the trial.
-- The publisher runs every 5 minutes during both posting windows and never posts more than
-  2 hours late. It skips a slot if something is already posted around that time.
+- A Cloudflare cron starts the publisher at 6:00, 6:15, 6:30 AM and 8:00, 8:15, 8:30 PM IST
+  (the :30 runs retry failures); GitHub's own schedule adds a 7:00 AM / 9:00 PM fallback.
+  It never posts more than 2 hours late, and skips a slot if something is already posted
+  around that time.
 - The weekly build skips anything already built (captions, images, reels). Use the
   workflow's "Regenerate" box or `--force` to rebuild.
 - Stack: GitHub Actions; Cloudflare R2 (private state bucket + public media bucket);
@@ -115,6 +117,12 @@ CTA instead.
 
 ## Open items
 
+- [ ] **GitHub Actions blocked since ~20 Nov 2026** ("recent account payments have failed or
+      your spending limit needs to be increased"). Nothing posted 21–22 Nov and the 21 Nov
+      weekly build never ran. Fix the payment in GitHub → Billing and plans. Posts for
+      22 Nov–6 Dec were built locally and are in R2, waiting.
+- [ ] Change the Cloudflare cron to the new publish times (see How it runs).
+
 - [ ] Drik muhurat times for **Bhai Dooj (11 Nov 2026)**. Missing, so the post goes out without them.
 - [ ] Facebook 6:15 AM story was skipped on 5 Nov as a false duplicate. The Facebook reel
       the system posted itself probably isn't recognised as its own post.
@@ -146,3 +154,4 @@ CTA instead.
 - 2026-11-07 · Panchang reels read the 3 rashis inside the reel · otherwise rashifal vanished from the feed on reel days
 - 2026-11-07 · Weekly build skips anything already built; `--force` rebuilds · a second build shouldn't spend API credits again
 - 2026-11-07 · This file is the shared context across Claude Code, Cowork and claude.ai · discussions happen in several tools
+- 2026-11-22 · Publisher runs only at slot times (6 runs + 2 fallbacks a day) instead of every 5 min · ~50 mostly idle runs a day used ~1,000 Actions minutes by 20 Nov
