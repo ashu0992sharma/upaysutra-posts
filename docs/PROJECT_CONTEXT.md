@@ -40,6 +40,8 @@ Owner: Ashutosh Sharma. Repo: `ashu0992sharma/upaysutra-posts` (private).
   (the :30 runs retry failures); GitHub's own schedule adds a 7:00 AM / 9:00 PM fallback.
   It never posts more than 2 hours late, and skips a slot if something is already posted
   around that time.
+- **Catch-up:** to send a post that's over 2 hours late, run the publish workflow with its
+  post id in the "item" box (e.g. `2026-11-22_story_pm`).
 - The weekly build skips anything already built (captions, images, reels). Use the
   workflow's "Regenerate" box or `--force` to rebuild.
 - Stack: GitHub Actions; Cloudflare R2 (private state bucket + public media bucket);
@@ -154,4 +156,5 @@ CTA instead.
 - 2026-11-07 · Panchang reels read the 3 rashis inside the reel · otherwise rashifal vanished from the feed on reel days
 - 2026-11-07 · Weekly build skips anything already built; `--force` rebuilds · a second build shouldn't spend API credits again
 - 2026-11-07 · This file is the shared context across Claude Code, Cowork and claude.ai · discussions happen in several tools
+- 2026-11-22 · Publish workflow takes an optional post id that skips the 2 h late limit · manual catch-up after the Actions billing block
 - 2026-11-22 · Publisher runs only at slot times (6 runs + 2 fallbacks a day) instead of every 5 min · ~50 mostly idle runs a day used ~1,000 Actions minutes by 20 Nov

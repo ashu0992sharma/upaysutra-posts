@@ -428,7 +428,7 @@ def cmd_publish(args):
     if not args.dry_run:
         from postgen.meta import MetaClient
         client = MetaClient()
-    report = automation.publish_due(client=client, dry_run=args.dry_run)
+    report = automation.publish_due(client=client, dry_run=args.dry_run, only=args.item)
     for k, v in report.items():
         for line in v:
             print(f"{k}: {line}")
@@ -505,6 +505,7 @@ def main():
 
     sp = sub.add_parser("publish", help="publish every post whose time has come")
     sp.add_argument("--dry-run", action="store_true")
+    sp.add_argument("--item", help="publish only this post id, even if more than 2 h late")
     sp.set_defaults(func=cmd_publish)
 
     sp = sub.add_parser("preview", help="email the next day's posts (veto mode)")

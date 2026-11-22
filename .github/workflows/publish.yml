@@ -10,6 +10,10 @@ on:
     - cron: "30 1 * * *"          # 07:00 IST fallback for the morning slots
     - cron: "30 15 * * *"         # 21:00 IST fallback for the evening slots
   workflow_dispatch:
+    inputs:
+      item:
+        description: "Catch-up: post id to send now even if over 2 h late (e.g. 2026-11-22_story_pm); empty = normal run"
+        required: false
 concurrency: { group: postgen-state, cancel-in-progress: false }
 jobs:
   publish:
@@ -35,6 +39,9 @@ jobs:
         with: { python-version: "3.13", cache: pip }
       - run: pip install -r requirements.txt
       - run: python -m postgen sync down --light
-      - run: python -m postgen publish ${{ env.DRY_RUN == 'true' && '--dry-run' || '' }}
+      - name: Publish
+        env:
+          ITEM: ${{ inputs.item }}
+        run: python -m postgen publish ${{ env.DRY_RUN == 'true' && '--dry-run' || '' }} ${ITEM:+--item "$ITEM"}
       - if: always()
         run: python -m postgen sync up --light

@@ -108,8 +108,10 @@ def set_pause(target: str, pause: bool = True):
 
 # ---------------- publishing ----------------
 
-def publish_due(now: Optional[datetime] = None, client=None, dry_run: bool = False) -> dict:
-    """Publish every manifest item whose time has come (and isn't paused, stale or done)."""
+def publish_due(now: Optional[datetime] = None, client=None, dry_run: bool = False,
+                only: Optional[str] = None) -> dict:
+    """Publish every manifest item whose time has come (and isn't paused, stale or done).
+    only=<post id> publishes just that item and skips the late limit: a manual catch-up."""
     c = cfg()
     now = now or datetime.now(ZoneInfo(c["timezone"]))
     # Dry runs keep their own ledger so a trial week behaves like the real thing.
@@ -119,6 +121,8 @@ def publish_due(now: Optional[datetime] = None, client=None, dry_run: bool = Fal
     # Ids of posts this system published: they must never count as "already posted".
     ours = {v["id"] for slot in ledger.values() for v in slot.values() if isinstance(v, dict) and "id" in v}
     for item in _load(MANIFEST, []):
+        if only and item["id"] != only:
+            continue
         at = datetime.fromisoformat(item["publish_at"])
         if at > now:
             continue
@@ -131,7 +135,7 @@ def publish_due(now: Optional[datetime] = None, client=None, dry_run: bool = Fal
                 done["paused"] = now.isoformat()
                 report["skipped"].append(f"{item['id']}: paused")
             continue
-        if now - at > timedelta(minutes=c["late_limit_minutes"]):
+        if not only and now - at > timedelta(minutes=c["late_limit_minutes"]):
             if "stale" not in done:
                 done["stale"] = now.isoformat()
                 report["skipped"].append(f"{item['id']}: more than {c['late_limit_minutes']} min late, not posted")

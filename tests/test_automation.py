@@ -102,6 +102,13 @@ def test_stale_posts_never_go_out(env):
     assert m.calls == [] and any("late" in s for s in r["skipped"]) and alerts
 
 
+def test_item_catch_up_ignores_late_limit_only_for_that_post(env):
+    m = FakeMeta()
+    automation.publish_due(now=at(9, 0), client=m)              # marks the 6 AM ones stale
+    automation.publish_due(now=at(9, 5), client=m, only="2026-11-02_story_am")
+    assert {c[0] for c in m.calls} == {"ig_story", "fb_story"}
+
+
 class FakeHTTP:
     """Records Graph API requests and returns canned ids."""
 
